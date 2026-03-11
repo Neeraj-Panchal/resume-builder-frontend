@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+body {
+  background-color: #f4f7fe; /* Very soft premium background */
+  color: #0f172a;
+  font-family: 'Titillium Web', sans-serif;
+}
+
+/* Hide scrollbar for cleaner look but keep functionality */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); } 
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
