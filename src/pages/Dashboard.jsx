@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Search, Bell, LayoutDashboard, FileText, CreditCard, 
-  Settings, LogOut, Plus, Download, User, Menu, ChevronRight, Trash2, Edit3
+  Settings, LogOut, Plus, Download, User, Menu, ChevronRight, Trash2, Edit3, Crown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios'; 
@@ -14,17 +14,31 @@ const Dashboard = () => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, downloads: 0, views: 0 });
-  const [searchTerm, setSearchTerm] = useState(''); // NEW: Search state
+  const [searchTerm, setSearchTerm] = useState(''); 
+  const [isPremium, setIsPremium] = useState(false); // 🌟 NEW: Premium state
   
   // Modals State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newResumeTitle, setNewResumeTitle] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Fetching resumes
+  // Fetching resumes and subscription status
   useEffect(() => {
     fetchDashboardData();
+    checkSubscriptionStatus(); // 🌟 NEW: Fetch plan status
   }, []);
+
+  // 🌟 NEW: Check if user is premium
+  const checkSubscriptionStatus = async () => {
+    try {
+      const response = await api.get('/templates');
+      if (response.data && response.data.isPremium !== undefined) {
+        setIsPremium(response.data.isPremium);
+      }
+    } catch (error) {
+      console.error("Failed to fetch subscription status:", error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -269,10 +283,19 @@ const Dashboard = () => {
               <Bell size={20} />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
+            
+            {/* 🌟 DYNAMIC PLAN BADGE 🌟 */}
             <div className="text-right flex flex-col justify-center">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Plan</span>
-              <span className="text-sm font-bold text-[#5b45ff]">Basic</span>
+              {isPremium ? (
+                <span className="text-sm font-bold text-yellow-600 flex items-center gap-1">
+                  Premium <Crown size={14} className="fill-yellow-500 text-yellow-600" />
+                </span>
+              ) : (
+                <span className="text-sm font-bold text-[#5b45ff]">Basic</span>
+              )}
             </div>
+
           </div>
         </header>
 

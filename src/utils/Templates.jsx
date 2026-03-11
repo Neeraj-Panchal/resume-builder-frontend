@@ -27,12 +27,12 @@ const SkillBoxes = ({ progress, color }) => {
   // Convert percentage (e.g., 80) or raw 1-5 rating into a 1-5 scale
   const level = progress <= 5 ? progress : Math.round(progress / 20) || 3;
   return (
-    <div className="flex gap-1 mt-1.5">
+    <div className="flex gap-1 mt-1">
       {[1, 2, 3, 4, 5].map((val) => (
         <div 
           key={val} 
-          className="w-2.5 h-2.5 rounded-[2px]" 
-          style={{ backgroundColor: val <= level ? color : `${color}40` }} 
+          className="w-2.5 h-2.5 rounded-[2px] shrink-0" 
+          style={{ backgroundColor: val <= level ? color : `${color}30` }} 
         />
       ))}
     </div>
@@ -40,26 +40,26 @@ const SkillBoxes = ({ progress, color }) => {
 };
 
 /**
- * 1. MODERN PROFESSIONAL TEMPLATE (COMPACT & PAGE-BREAK SAFE)
+ * 1. MODERN PROFESSIONAL TEMPLATE
  */
 export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref) => {
   const { profileInfo, contactInfo, workExperiences, education, skills, projects, certifications, languages, interests } = data;
 
   return (
-    <div ref={ref} className="bg-white p-[12mm] px-[15mm] w-[210mm] min-h-[297mm] h-auto text-slate-800 shadow-sm font-sans relative box-border">
+    <div ref={ref} className="bg-white p-[12mm] px-[15mm] w-[210mm] min-h-[297mm] h-auto text-[#1e293b] shadow-sm font-sans relative box-border">
       {/* Top Accent Line */}
       <div className="absolute top-0 left-0 right-0 h-2" style={{ backgroundColor: color }}></div>
 
       {/* Header Section - Compact */}
-      <div className="flex flex-col justify-center items-center text-center border-b-2 border-slate-200 pb-4 mb-5 mt-2">
-        <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-1 leading-none break-words max-w-full">
+      <div className="flex flex-col justify-center items-center text-center border-b-2 border-[#e2e8f0] pb-4 mb-5 mt-2">
+        <h1 className="text-4xl font-black tracking-tight text-[#0f172a] mb-1 leading-none break-words max-w-full">
           {profileInfo?.fullName || "Your Name"}
         </h1>
         <p className="text-sm font-bold uppercase tracking-widest mb-3 break-words max-w-full" style={{ color: color }}>
           {profileInfo?.designation || "Job Designation"}
         </p>
         
-        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1.5 text-[10px] font-semibold text-slate-600">
+        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1.5 text-[10px] font-semibold text-[#475569] w-full">
           {contactInfo?.email && <span className="flex items-center gap-1.5 break-words"><Mail size={12} style={{ color: color }}/> {contactInfo.email}</span>}
           {contactInfo?.phone && <span className="flex items-center gap-1.5 break-words"><Phone size={12} style={{ color: color }}/> {contactInfo.phone}</span>}
           {contactInfo?.location && <span className="flex items-center gap-1.5 break-words"><MapPin size={12} style={{ color: color }}/> {contactInfo.location}</span>}
@@ -71,28 +71,28 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
 
       {/* Summary */}
       {profileInfo?.summary && (
-        <div className="mb-5" style={{ breakInside: 'avoid' }}>
-          <p className="text-[11.5px] text-slate-700 leading-relaxed font-medium text-justify break-words">{profileInfo.summary}</p>
+        <div className="mb-5 w-full" style={{ breakInside: 'avoid' }}>
+          <p className="text-[11.5px] text-[#334155] leading-relaxed font-medium text-justify break-words">{profileInfo.summary}</p>
         </div>
       )}
 
       {/* Experience */}
       {workExperiences?.length > 0 && (
-        <div className="mb-5">
-          <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+        <div className="mb-5 w-full">
+          <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
             <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Work Experience
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-4 w-full">
             {workExperiences.map((exp, i) => (
-              <div key={i} className="group" style={{ breakInside: 'avoid' }}>
+              <div key={i} className="group w-full" style={{ breakInside: 'avoid' }}>
                 <div className="flex justify-between items-baseline mb-0.5 gap-4">
-                  <h4 className="font-bold text-slate-900 text-[13px] flex-1 min-w-0 break-words">{exp.role}</h4>
+                  <h4 className="font-bold text-[#0f172a] text-[13px] flex-1 min-w-0 break-words">{exp.role}</h4>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0 whitespace-nowrap" style={{ color: color, backgroundColor: `${color}1A` }}>
                     {formatDate(exp.startDate)} — {formatDate(exp.endDate) || 'Present'}
                   </span>
                 </div>
-                <p className="text-[11.5px] font-semibold text-slate-600 mb-1 break-words">{exp.company}</p>
-                <p className="text-[11px] text-slate-600 leading-relaxed break-words">{exp.description}</p>
+                <p className="text-[11.5px] font-semibold text-[#475569] mb-1 break-words">{exp.company}</p>
+                <p className="text-[11px] text-[#475569] leading-relaxed break-words">{exp.description}</p>
               </div>
             ))}
           </div>
@@ -101,45 +101,47 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <div className="mb-5">
-          <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+        <div className="mb-5 w-full">
+          <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
             <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Projects
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {projects.map((proj, i) => (
-              <div key={i} style={{ breakInside: 'avoid' }}>
+              <div key={i} className="w-full" style={{ breakInside: 'avoid' }}>
                 <div className="flex justify-between items-baseline mb-0.5 gap-4">
-                  <h4 className="font-bold text-slate-900 text-[12.5px] flex-1 min-w-0 break-words">{proj.projectTitle}</h4>
+                  <h4 className="font-bold text-[#0f172a] text-[12.5px] flex-1 min-w-0 break-words">{proj.projectTitle}</h4>
                   <div className="flex gap-2 text-[9px] font-bold uppercase tracking-wider shrink-0" style={{ color: color }}>
                     {proj.liveDemo && <span>Live Demo</span>}
                     {proj.github && <span>GitHub</span>}
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed break-words">{proj.description}</p>
+                <p className="text-[11px] text-[#475569] leading-relaxed break-words">{proj.description}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Two Column Layout for Education, Skills & Rest */}
-      <div className="grid grid-cols-12 gap-8 pt-2">
-        <div className="col-span-7 space-y-5">
+      {/* Split Layout: Wider Left (66%), Narrower Right (30%) */}
+      <div className="flex justify-between items-start pt-2 w-full">
+        
+        {/* LEFT COLUMN: Education & Certs */}
+        <div className="w-[66%] space-y-5 pr-4">
           {/* Education */}
           {education?.length > 0 && (
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-full">
+              <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
                 <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Education
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-3 w-full">
                 {education.map((edu, i) => (
                   <div key={i} style={{ breakInside: 'avoid' }} className="w-full">
                     <div className="flex justify-between items-baseline gap-3">
-                      <h4 className="font-bold text-slate-900 text-[12px] flex-1 min-w-0 break-words">{edu.degree}</h4>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase shrink-0 whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</p>
+                      <h4 className="font-bold text-[#0f172a] text-[12px] flex-1 min-w-0 break-words">{edu.degree}</h4>
+                      <p className="text-[9px] text-[#94a3b8] font-bold uppercase shrink-0 whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</p>
                     </div>
                     <div className="flex justify-between items-center mt-0.5 gap-3">
-                      <p className="text-[11px] text-slate-600 font-medium flex-1 min-w-0 break-words">{edu.institution}</p>
+                      <p className="text-[11px] text-[#475569] font-medium flex-1 min-w-0 break-words">{edu.institution}</p>
                       {edu.Marks && <p className="text-[9px] font-bold shrink-0 whitespace-nowrap" style={{ color: color }}>Score: {edu.Marks}</p>}
                     </div>
                   </div>
@@ -148,18 +150,18 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
             </div>
           )}
 
-          {/* Certifications (Wrapped efficiently with safe constraints) */}
+          {/* Certifications - Long texts will gracefully wrap below */}
           {certifications?.length > 0 && (
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-full">
+              <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
                 <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Certifications
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 {certifications.map((cert, i) => (
-                  <div key={i} className="flex justify-between items-start text-[10.5px] gap-4" style={{ breakInside: 'avoid' }}>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-bold text-slate-900 leading-snug break-words">{cert.title}</span>
-                      {cert.issuer && <span className="text-slate-500 ml-1 break-words">({cert.issuer})</span>}
+                  <div key={i} className="flex justify-between items-start text-[10.5px] gap-4 w-full" style={{ breakInside: 'avoid' }}>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <span className="font-bold text-[#0f172a] break-words">{cert.title}</span>
+                      {cert.issuer && <span className="text-[#64748b] ml-1 break-words">({cert.issuer})</span>}
                     </div>
                     <span className="font-bold shrink-0 text-right whitespace-nowrap mt-0.5" style={{ color: color }}>{formatDate(cert.date)}</span>
                   </div>
@@ -169,20 +171,22 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
           )}
         </div>
 
-        <div className="col-span-5 space-y-5">
-          {/* Skills with Boxes - 2 COLUMNS GRID */}
+        {/* RIGHT COLUMN: Skills, Langs, Interests */}
+        <div className="w-[30%] space-y-5">
+          {/* Skills - 2 COLUMNS EXACT FIT EDGE-TO-EDGE */}
           {skills?.length > 0 && (
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-full">
+              <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
                 <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Skills
               </h3>
-              <div className="grid grid-cols-2 gap-y-3 justify-items-stretch">
+              <div className="flex flex-wrap justify-between gap-y-3 w-full">
                 {skills.map((skill, i) => (
                   <div key={i} className="w-[47%] flex flex-col" style={{ breakInside: 'avoid' }}>
-                    <span className="text-[10.5px] font-bold text-slate-800 block truncate pr-2" title={skill.name}>{skill.name}</span>
+                    <span className="text-[10px] font-bold text-[#1e293b] block truncate pr-1" title={skill.name}>{skill.name}</span>
                     <SkillBoxes progress={skill.progress} color={color} />
                   </div>
                 ))}
+                {/* Ghost element for perfect 2-column flex alignment */}
                 {skills.length % 2 !== 0 && <div className="w-[47%]"></div>}
               </div>
             </div>
@@ -190,13 +194,13 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
 
           {/* Languages */}
           {languages?.length > 0 && (
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-full">
+              <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
                 <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Languages
               </h3>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5 w-full">
                 {languages.map((lang, i) => (
-                  <span key={i} className="text-[10px] font-bold text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 break-words max-w-full" style={{ breakInside: 'avoid' }}>
+                  <span key={i} className="text-[10.5px] font-bold text-[#334155] bg-[#f8fafc] px-2 py-1 rounded border border-[#e2e8f0] break-words max-w-full" style={{ breakInside: 'avoid' }}>
                     {lang.name}
                   </span>
                 ))}
@@ -206,13 +210,13 @@ export const ModernTemplate = React.forwardRef(({ data, color = '#5b45ff' }, ref
 
           {/* Interests */}
           {interests?.length > 0 && (
-            <div>
-              <h3 className="text-[13px] font-black uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
+            <div className="w-full">
+              <h3 className="text-[13px] font-black uppercase tracking-widest text-[#0f172a] mb-3 flex items-center gap-2">
                 <span className="w-5 h-px" style={{ backgroundColor: color }}></span> Interests
               </h3>
-              <div className="flex flex-wrap gap-x-2 gap-y-1">
+              <div className="flex flex-wrap gap-x-2 gap-y-1 w-full">
                 {interests.map((interest, i) => (
-                  <span key={i} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest break-words max-w-full" style={{ breakInside: 'avoid' }}>
+                  <span key={i} className="text-[10.5px] font-bold text-[#64748b] uppercase tracking-widest break-words max-w-full" style={{ breakInside: 'avoid' }}>
                     {interest}{i < interests.length - 1 ? ' •' : ''}
                   </span>
                 ))}
@@ -232,14 +236,14 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
   const { profileInfo, contactInfo, workExperiences, education, skills, projects, certifications, languages, interests } = data;
 
   return (
-    <div ref={ref} className="bg-white w-[210mm] min-h-[297mm] h-auto flex text-slate-800 shadow-sm overflow-hidden font-sans box-border">
+    <div ref={ref} className="bg-white w-[210mm] min-h-[297mm] h-auto flex text-[#1e293b] shadow-sm overflow-hidden font-sans box-border">
       {/* Sidebar (Dark) */}
-      <div className="w-[30%] bg-slate-900 text-white p-6 flex flex-col gap-6 shrink-0">
+      <div className="w-[30%] bg-[#0f172a] text-white p-6 flex flex-col gap-6 shrink-0">
         <div className="mb-2">
           <div className="w-12 h-1 mb-4" style={{ backgroundColor: color }}></div>
           <h1 className="text-2xl font-black uppercase leading-tight tracking-tighter break-words">
             {profileInfo?.fullName?.split(' ')[0]} <br/> 
-            <span className="text-slate-400">{profileInfo?.fullName?.split(' ').slice(1).join(' ')}</span>
+            <span className="text-[#94a3b8]">{profileInfo?.fullName?.split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] mt-3 leading-relaxed break-words" style={{ color: color }}>
             {profileInfo?.designation}
@@ -247,7 +251,7 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 border-b border-slate-800 pb-1.5">Contact</h3>
+          <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#64748b] border-b border-[#1e293b] pb-1.5">Contact</h3>
           <div className="space-y-2.5">
             {contactInfo?.email && <div className="flex items-center gap-2.5"><Mail size={10} style={{ color: color }} className="shrink-0"/><p className="text-[9px] font-medium opacity-80 break-words min-w-0">{contactInfo.email}</p></div>}
             {contactInfo?.phone && <div className="flex items-center gap-2.5"><Phone size={10} style={{ color: color }} className="shrink-0"/><p className="text-[9px] font-medium opacity-80 break-words min-w-0">{contactInfo.phone}</p></div>}
@@ -256,11 +260,11 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
           </div>
         </div>
 
-        {/* Skills with Boxes */}
+        {/* Skills with Boxes - NOW IN 2 COLUMNS IN SIDEBAR */}
         {skills?.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 border-b border-slate-800 pb-1.5">Core Skills</h3>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-3 justify-items-stretch">
+            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#64748b] border-b border-[#1e293b] pb-1.5">Core Skills</h3>
+            <div className="flex flex-wrap justify-between gap-y-3 w-full">
               {skills.map((skill, i) => (
                 <div key={i} className="flex flex-col w-[47%]" style={{ breakInside: 'avoid' }}>
                   <span className="text-[8.5px] font-black uppercase tracking-widest block mb-1 truncate pr-1" title={skill.name}>{skill.name}</span>
@@ -274,10 +278,10 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
 
         {languages?.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 border-b border-slate-800 pb-1.5">Languages</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#64748b] border-b border-[#1e293b] pb-1.5">Languages</h3>
             <div className="flex flex-wrap gap-1.5">
               {languages.map((lang, i) => (
-                <span key={i} className="text-[9px] font-medium opacity-90 bg-slate-800 px-1.5 py-0.5 rounded break-words max-w-full" style={{ breakInside: 'avoid' }}>
+                <span key={i} className="text-[9px] font-medium opacity-90 bg-[#1e293b] px-1.5 py-0.5 rounded break-words max-w-full" style={{ breakInside: 'avoid' }}>
                   {lang.name}
                 </span>
               ))}
@@ -287,7 +291,7 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
 
         {interests?.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 border-b border-slate-800 pb-1.5">Interests</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#64748b] border-b border-[#1e293b] pb-1.5">Interests</h3>
             <div className="flex flex-wrap gap-1.5">
               {interests.map((int, i) => (
                 <span key={i} className="text-[8.5px] font-bold uppercase tracking-widest break-words max-w-full" style={{ color: color, breakInside: 'avoid' }}>
@@ -300,54 +304,54 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
       </div>
 
       {/* Main Content (Light) */}
-      <div className="flex-1 p-8 bg-white space-y-6">
+      <div className="flex-1 p-8 bg-white space-y-6 w-full">
         {profileInfo?.summary && (
-          <section style={{ breakInside: 'avoid' }}>
+          <section style={{ breakInside: 'avoid' }} className="w-full">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: color }}>About Me</h3>
-            <p className="text-[11px] text-slate-600 leading-relaxed font-medium italic break-words">"{profileInfo.summary}"</p>
+            <p className="text-[11px] text-[#475569] leading-relaxed font-medium italic break-words">"{profileInfo.summary}"</p>
           </section>
         )}
 
         {workExperiences?.length > 0 && (
-          <section className="space-y-4">
+          <section className="space-y-4 w-full">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: color }}>Work Experience</h3>
             {workExperiences.map((exp, i) => (
-              <div key={i} className="space-y-1 border-l-2 border-slate-100 pl-3 relative" style={{ breakInside: 'avoid' }}>
+              <div key={i} className="space-y-1 border-l-2 border-[#f1f5f9] pl-3 relative w-full" style={{ breakInside: 'avoid' }}>
                 <div className="absolute w-2 h-2 rounded-full -left-[5px] top-1 border-2 border-white" style={{ backgroundColor: color }}></div>
-                <div className="flex justify-between items-baseline gap-3">
-                  <h4 className="font-black text-slate-900 text-[12px] uppercase tracking-tight flex-1 min-w-0 break-words">{exp.role}</h4>
-                  <span className="text-[8.5px] font-black text-slate-400 uppercase shrink-0 whitespace-nowrap">{formatDate(exp.startDate)} — {formatDate(exp.endDate) || 'Present'}</span>
+                <div className="flex justify-between items-baseline gap-3 w-full">
+                  <h4 className="font-black text-[#0f172a] text-[12px] uppercase tracking-tight flex-1 min-w-0 break-words">{exp.role}</h4>
+                  <span className="text-[8.5px] font-black text-[#94a3b8] uppercase shrink-0 whitespace-nowrap">{formatDate(exp.startDate)} — {formatDate(exp.endDate) || 'Present'}</span>
                 </div>
                 <p className="text-[9.5px] font-black uppercase tracking-wider break-words" style={{ color: color }}>{exp.company}</p>
-                <p className="text-[10.5px] text-slate-600 leading-relaxed break-words">{exp.description}</p>
+                <p className="text-[10.5px] text-[#475569] leading-relaxed break-words">{exp.description}</p>
               </div>
             ))}
           </section>
         )}
 
         {projects?.length > 0 && (
-          <section className="space-y-4">
+          <section className="space-y-4 w-full">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: color }}>Key Projects</h3>
             {projects.map((proj, i) => (
-              <div key={i} className="space-y-1" style={{ breakInside: 'avoid' }}>
-                <h4 className="font-black text-slate-900 text-[11.5px] uppercase break-words">{proj.projectTitle}</h4>
-                <p className="text-[10.5px] text-slate-600 leading-relaxed break-words">{proj.description}</p>
+              <div key={i} className="space-y-1 w-full" style={{ breakInside: 'avoid' }}>
+                <h4 className="font-black text-[#0f172a] text-[11.5px] uppercase break-words">{proj.projectTitle}</h4>
+                <p className="text-[10.5px] text-[#475569] leading-relaxed break-words">{proj.description}</p>
               </div>
             ))}
           </section>
         )}
 
         {education?.length > 0 && (
-          <section className="space-y-4">
+          <section className="space-y-4 w-full">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: color }}>Education</h3>
             {education.map((edu, i) => (
-              <div key={i} className="w-full border-b border-slate-50 pb-2" style={{ breakInside: 'avoid' }}>
-                <div className="flex justify-between items-baseline gap-3">
-                  <h4 className="font-black text-slate-900 text-[11.5px] uppercase flex-1 min-w-0 break-words">{edu.degree}</h4>
-                  <p className="text-[8.5px] font-black text-slate-400 uppercase shrink-0 whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</p>
+              <div key={i} className="w-full border-b border-[#f8fafc] pb-2" style={{ breakInside: 'avoid' }}>
+                <div className="flex justify-between items-baseline gap-3 w-full">
+                  <h4 className="font-black text-[#0f172a] text-[11.5px] uppercase flex-1 min-w-0 break-words">{edu.degree}</h4>
+                  <p className="text-[8.5px] font-black text-[#94a3b8] uppercase shrink-0 whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</p>
                 </div>
-                <div className="flex justify-between items-center mt-0.5 gap-3">
-                  <p className="text-[9.5px] text-slate-500 font-bold flex-1 min-w-0 break-words">{edu.institution}</p>
+                <div className="flex justify-between items-center mt-0.5 gap-3 w-full">
+                  <p className="text-[9.5px] text-[#64748b] font-bold flex-1 min-w-0 break-words">{edu.institution}</p>
                   {edu.Marks && <p className="text-[8.5px] font-bold mt-1 shrink-0 whitespace-nowrap" style={{ color: color }}>Score: {edu.Marks}</p>}
                 </div>
               </div>
@@ -356,14 +360,15 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
         )}
 
         {certifications?.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 w-full">
             <h3 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: color }}>Certifications</h3>
             {certifications.map((cert, i) => (
-              <div key={i} className="flex justify-between items-start text-[10px] gap-3" style={{ breakInside: 'avoid' }}>
-                <p className="font-bold text-slate-900 flex-1 min-w-0 break-words">
-                  {cert.title} {cert.issuer && <span className="font-normal text-slate-500">({cert.issuer})</span>}
-                </p>
-                <p className="font-bold text-slate-400 shrink-0 whitespace-nowrap mt-0.5">{formatDate(cert.date)}</p>
+              <div key={i} className="flex justify-between items-start text-[10px] gap-3 w-full" style={{ breakInside: 'avoid' }}>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-[#0f172a] break-words">{cert.title}</div>
+                  {cert.issuer && <div className="text-[#64748b] break-words mt-0.5">({cert.issuer})</div>}
+                </div>
+                <div className="font-bold text-[#94a3b8] shrink-0 whitespace-nowrap mt-0.5">{formatDate(cert.date)}</div>
               </div>
             ))}
           </section>
@@ -374,28 +379,28 @@ export const CreativeTemplate = React.forwardRef(({ data, color = '#5b45ff' }, r
 });
 
 /**
- * 3. EXECUTIVE TEMPLATE (NEW - Compact)
+ * 3. EXECUTIVE TEMPLATE (EXACT 4 COLUMNS EDGE TO EDGE)
  */
 export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, ref) => {
   const { profileInfo, contactInfo, workExperiences, education, skills, projects, certifications, languages, interests } = data;
 
   return (
-    <div ref={ref} className="bg-white p-[15mm] w-[210mm] min-h-[297mm] h-auto text-slate-900 shadow-sm font-serif box-border">
+    <div ref={ref} className="bg-white p-[15mm] w-[210mm] min-h-[297mm] h-auto text-[#0f172a] shadow-sm font-serif box-border">
       {/* Header Section */}
-      <div className="text-center mb-5">
-        <h1 className="text-3xl font-bold uppercase tracking-widest text-slate-900 mb-1.5 break-words max-w-full" style={{ color: color }}>
+      <div className="text-center mb-5 w-full">
+        <h1 className="text-3xl font-bold uppercase tracking-widest text-[#0f172a] mb-1.5 break-words max-w-full" style={{ color: color }}>
           {profileInfo?.fullName || "Your Name"}
         </h1>
-        <p className="text-[13px] text-slate-600 uppercase tracking-widest mb-2.5 break-words max-w-full">
+        <p className="text-[13px] text-[#475569] uppercase tracking-widest mb-2.5 break-words max-w-full">
           {profileInfo?.designation || "Professional Title"}
         </p>
-        <div className="flex justify-center flex-wrap gap-x-2.5 gap-y-1 text-[10px] text-slate-700">
+        <div className="flex justify-center flex-wrap gap-x-2.5 gap-y-1 text-[10px] text-[#334155] w-full">
           {contactInfo?.email && <span className="break-words">{contactInfo.email}</span>}
-          {contactInfo?.phone && <span className="text-slate-300">|</span>}
+          {contactInfo?.phone && <span className="text-[#cbd5e1]">|</span>}
           {contactInfo?.phone && <span className="break-words">{contactInfo.phone}</span>}
-          {contactInfo?.location && <span className="text-slate-300">|</span>}
+          {contactInfo?.location && <span className="text-[#cbd5e1]">|</span>}
           {contactInfo?.location && <span className="break-words">{contactInfo.location}</span>}
-          {contactInfo?.linkedIn && <span className="text-slate-300">|</span>}
+          {contactInfo?.linkedIn && <span className="text-[#cbd5e1]">|</span>}
           {contactInfo?.linkedIn && <span className="break-words">{contactInfo.linkedIn}</span>}
         </div>
       </div>
@@ -404,9 +409,9 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
 
       {/* Summary */}
       {profileInfo?.summary && (
-        <div className="mb-5" style={{ breakInside: 'avoid' }}>
+        <div className="mb-5 w-full" style={{ breakInside: 'avoid' }}>
           <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1.5" style={{ color: color }}>Professional Summary</h3>
-          <p className="text-[11.5px] text-slate-700 leading-relaxed text-justify break-words">
+          <p className="text-[11.5px] text-[#334155] leading-relaxed text-justify break-words">
             {profileInfo.summary}
           </p>
         </div>
@@ -414,17 +419,17 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
 
       {/* Experience */}
       {workExperiences?.length > 0 && (
-        <div className="mb-5">
+        <div className="mb-5 w-full">
           <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Professional Experience</h3>
-          <div className="space-y-3 mt-3">
+          <div className="space-y-3 mt-3 w-full">
             {workExperiences.map((exp, i) => (
-              <div key={i} style={{ breakInside: 'avoid' }}>
-                <div className="flex justify-between items-end mb-0.5 gap-3">
-                  <h4 className="font-bold text-slate-900 text-[13px] flex-1 min-w-0 break-words">{exp.company}</h4>
-                  <span className="text-[10px] text-slate-600 italic shrink-0 whitespace-nowrap">{formatDate(exp.startDate)} — {formatDate(exp.endDate) || 'Present'}</span>
+              <div key={i} className="w-full" style={{ breakInside: 'avoid' }}>
+                <div className="flex justify-between items-end mb-0.5 gap-3 w-full">
+                  <h4 className="font-bold text-[#0f172a] text-[13px] flex-1 min-w-0 break-words">{exp.company}</h4>
+                  <span className="text-[10px] text-[#475569] italic shrink-0 whitespace-nowrap">{formatDate(exp.startDate)} — {formatDate(exp.endDate) || 'Present'}</span>
                 </div>
-                <p className="text-[11.5px] font-medium text-slate-800 italic mb-1 break-words">{exp.role}</p>
-                <p className="text-[11px] text-slate-700 leading-relaxed break-words">{exp.description}</p>
+                <p className="text-[11.5px] font-medium text-[#1e293b] italic mb-1 break-words">{exp.role}</p>
+                <p className="text-[11px] text-[#334155] leading-relaxed break-words">{exp.description}</p>
               </div>
             ))}
           </div>
@@ -433,15 +438,15 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
 
       {/* Projects */}
       {projects?.length > 0 && (
-        <div className="mb-5">
+        <div className="mb-5 w-full">
           <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Notable Projects</h3>
-          <div className="space-y-2 mt-3">
+          <div className="space-y-2 mt-3 w-full">
             {projects.map((proj, i) => (
-              <div key={i} style={{ breakInside: 'avoid' }}>
-                <div className="flex justify-between items-end mb-0.5">
-                  <h4 className="font-bold text-slate-900 text-[12px] break-words">{proj.projectTitle}</h4>
+              <div key={i} className="w-full" style={{ breakInside: 'avoid' }}>
+                <div className="flex justify-between items-end mb-0.5 w-full">
+                  <h4 className="font-bold text-[#0f172a] text-[12px] break-words">{proj.projectTitle}</h4>
                 </div>
-                <p className="text-[11px] text-slate-700 leading-relaxed break-words">{proj.description}</p>
+                <p className="text-[11px] text-[#334155] leading-relaxed break-words">{proj.description}</p>
               </div>
             ))}
           </div>
@@ -450,19 +455,19 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
 
       {/* Education */}
       {education?.length > 0 && (
-        <div className="mb-5">
+        <div className="mb-5 w-full">
           <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Education</h3>
-          <div className="space-y-2 mt-3">
+          <div className="space-y-2 mt-3 w-full">
             {education.map((edu, i) => (
               <div key={i} className="w-full" style={{ breakInside: 'avoid' }}>
-                <div className="flex justify-between items-start gap-3">
+                <div className="flex justify-between items-start gap-3 w-full">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 text-[12px] break-words">{edu.institution}</h4>
-                    <p className="text-[11px] text-slate-700 italic break-words">{edu.degree}</p>
+                    <h4 className="font-bold text-[#0f172a] text-[12px] break-words">{edu.institution}</h4>
+                    <p className="text-[11px] text-[#334155] italic break-words">{edu.degree}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] text-slate-600 block whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</span>
-                    {edu.Marks && <span className="text-[9.5px] font-bold text-slate-500 block mt-0.5 whitespace-nowrap">Marks: {edu.Marks}</span>}
+                    <span className="text-[10px] text-[#475569] block whitespace-nowrap">{formatDate(edu.startDate)} — {formatDate(edu.endDate)}</span>
+                    {edu.Marks && <span className="text-[9.5px] font-bold text-[#64748b] block mt-0.5 whitespace-nowrap">Marks: {edu.Marks}</span>}
                   </div>
                 </div>
               </div>
@@ -472,33 +477,34 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
       )}
 
       {/* Other Info (Skills, Certs, Languages) */}
-      <div className="mb-5 space-y-4">
-        {/* SKILLS - EXACTLY 4 COLUMNS */}
+      <div className="mb-5 space-y-4 w-full">
+        {/* SKILLS - EXACTLY 4 COLUMNS, FLEX JUSTIFY-BETWEEN FOR MARGIN TOUCHING */}
         {skills?.length > 0 && (
-          <div style={{ breakInside: 'avoid' }}>
+          <div className="w-full" style={{ breakInside: 'avoid' }}>
             <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Skills & Expertise</h3>
-            <div className="mt-3 flex flex-wrap justify-between gap-y-3">
+            <div className="mt-3 flex flex-wrap justify-between gap-y-4 w-full">
               {skills.map((skill, i) => (
-                <div key={i} className="flex flex-col w-[23%]" style={{ breakInside: 'avoid' }}>
-                  <span className="text-[11px] font-bold text-slate-800 truncate mb-0.5" title={skill.name}>{skill.name}</span>
+                <div key={i} className="flex flex-col w-[22%]" style={{ breakInside: 'avoid' }}>
+                  <span className="text-[11px] font-bold text-[#1e293b] truncate mb-0.5" title={skill.name}>{skill.name}</span>
                   <SkillBoxes progress={skill.progress} color={color} />
                 </div>
               ))}
+              {/* Invisible Ghost Elements to maintain 4-column alignment for incomplete rows */}
               {skills.length % 4 !== 0 && Array.from({ length: 4 - (skills.length % 4) }).map((_, i) => (
-                <div key={`ghost-${i}`} className="w-[23%]"></div>
+                <div key={`ghost-${i}`} className="w-[22%]"></div>
               ))}
             </div>
           </div>
         )}
         
         {certifications?.length > 0 && (
-          <div style={{ breakInside: 'avoid' }}>
+          <div className="w-full" style={{ breakInside: 'avoid' }}>
             <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Certifications</h3>
-            <div className="mt-2 text-[11px] text-slate-700 leading-relaxed space-y-1">
+            <div className="mt-2 text-[11px] text-[#334155] leading-relaxed space-y-1 w-full">
               {certifications.map((cert, i) => (
-                <div key={i} className="flex justify-between items-start gap-4">
+                <div key={i} className="flex justify-between items-start gap-4 w-full">
                   <div className="flex-1 min-w-0">
-                    <span className="font-bold text-slate-900 break-words">{cert.title}</span>
+                    <span className="font-bold text-[#0f172a] break-words">{cert.title}</span>
                     {cert.issuer && <span className="break-words">, {cert.issuer}</span>}
                   </div>
                   <span className="italic shrink-0 text-right whitespace-nowrap mt-0.5">{formatDate(cert.date)}</span>
@@ -508,11 +514,11 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
           </div>
         )}
 
-        <div className="flex gap-8" style={{ breakInside: 'avoid' }}>
+        <div className="flex gap-8 w-full" style={{ breakInside: 'avoid' }}>
           {languages?.length > 0 && (
             <div className="flex-1 min-w-0">
               <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Languages</h3>
-              <div className="mt-1.5 text-[11px] text-slate-700 leading-relaxed break-words">
+              <div className="mt-1.5 text-[11px] text-[#334155] leading-relaxed break-words">
                 {languages.map((lang, i) => (<span key={i}>{lang.name}{i < languages.length - 1 ? ", " : ""}</span>))}
               </div>
             </div>
@@ -520,7 +526,7 @@ export const ExecutiveTemplate = React.forwardRef(({ data, color = '#0f172a' }, 
           {interests?.length > 0 && (
             <div className="flex-1 min-w-0">
               <h3 className="text-[12px] font-bold uppercase tracking-widest mb-1 border-b pb-1" style={{ color: color, borderColor: `${color}40` }}>Interests</h3>
-              <div className="mt-1.5 text-[11px] text-slate-700 leading-relaxed break-words">
+              <div className="mt-1.5 text-[11px] text-[#334155] leading-relaxed break-words">
                 {interests.map((int, i) => (<span key={i}>{int}{i < interests.length - 1 ? ", " : ""}</span>))}
               </div>
             </div>

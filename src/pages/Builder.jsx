@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Save, ArrowLeft, Loader2, User, Phone, Briefcase, Code, Plus, 
   Trash2, Download, Palette, FileText, ChevronLeft, ChevronRight, 
-  GraduationCap, FolderGit2, Award, Languages, Heart, Eye
+  GraduationCap, FolderGit2, Award, Languages, Heart, Eye, Mail, Send, X
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../api/axios";
@@ -21,14 +21,23 @@ const Builder = () => {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   
-  // Theme & Layout States
+  // Theme, Layout & Subscription States
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [themeColor, setThemeColor] = useState("#5b45ff");
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false); // 🌟 NEW: Subscription status
   
-  // Wizard & Preview States
+  // Wizard, Preview & Email States
   const [activeStep, setActiveStep] = useState(0);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailData, setEmailData] = useState({
+    recipientEmail: "",
+    subject: "",
+    message: "Please find my resume attached.\n\nBest regards,"
+  });
 
   const resumeRef = useRef();
   const modalResumeRef = useRef();
@@ -61,7 +70,21 @@ const Builder = () => {
   // ----- FETCH DATA -----
   useEffect(() => {
     if (id) fetchResumeDetails();
+    checkSubscriptionStatus(); // 🌟 NEW: Check premium status on load
   }, [id]);
+
+  // 🌟 NEW: Function to check if user is Premium 🌟
+  const checkSubscriptionStatus = async () => {
+    try {
+      // Calls your TemplatesController GET /api/templates
+      const response = await api.get('/templates');
+      if (response.data && response.data.isPremium !== undefined) {
+        setIsPremium(response.data.isPremium);
+      }
+    } catch (error) {
+      console.error("Failed to fetch subscription status:", error);
+    }
+  };
 
   const fetchResumeDetails = async () => {
     try {
@@ -145,57 +168,124 @@ const Builder = () => {
     setActiveStep((prev) => Math.max(prev - 1, 0));
   };
 
-  // 🌟 MULTI-PAGE A4 PDF EXPORT LOGIC 🌟
-  const handleExportPDF = async () => {
+  // 🌟 HELPER: GENERATE PDF OBJECT (Used for both Download and Email) 🌟
+  const generatePDFObject = async () => {
     const targetRef = showPreviewModal ? modalResumeRef.current : resumeRef.current;
-    if (!targetRef) return;
+    if (!targetRef) throw new Error("Resume not ready yet.");
+
+    const clone = targetRef.cloneNode(true);
+    clone.style.transform = "none";
+    clone.style.width = "210mm";
+    clone.style.height = "auto";
+    clone.style.position = "absolute";
+    clone.style.top = "-9999px";
+    clone.style.left = "-9999px";
     
-    setExporting(true);
-    const toastId = toast.loading("Generating Multi-page PDF...");
-    try {
-      const originalTransform = targetRef.style.transform;
-      targetRef.style.transform = "none";
-      targetRef.style.width = "210mm";
-      targetRef.style.height = "auto"; // Ensure it grows fully
+    document.body.appendChild(clone);
 
-      const canvas = await html2canvas(targetRef, { 
-        scale: 3, 
-        useCORS: true, 
-        backgroundColor: "#ffffff",
-        scrollY: -window.scrollY // Fixes bugs if user is scrolled down
-      });
-      targetRef.style.transform = originalTransform;
+    const canvas = await html2canvas(clone, { 
+      scale: 3, 
+      useCORS: true, 
+      backgroundColor: "#ffffff",
+      scrollY: -window.scrollY
+    });
+    
+    document.body.removeChild(clone);
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      
-      // Calculate total image height in PDF mm
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let heightLeft = imgHeight;
-      let position = 0; // Starts at top of page 1
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+    let heightLeft = imgHeight;
+    let position = 0; 
 
-      // Add first page
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = position - pageHeight;
+      pdf.addPage();
       pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
       heightLeft -= pageHeight;
+    }
 
-      // If content is longer than 1 page, loop and add pages
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight; // Shifts the long image upwards
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+    return pdf;
+  };
 
-      pdf.save(`${resumeData.profileInfo?.fullName || "Untitled"}_Resume.pdf`);
+  // 🌟 DOWNLOAD PDF ACTION 🌟
+  const handleExportPDF = async () => {
+    setExporting(true);
+    const toastId = toast.loading("Generating HD PDF...");
+    try {
+      const pdf = await generatePDFObject();
+      const fileName = resumeData.profileInfo?.fullName 
+        ? `${resumeData.profileInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf` 
+        : "My_Resume.pdf";
+      
+      pdf.save(fileName);
       toast.success("Downloaded successfully!", { id: toastId });
     } catch (error) {
-      toast.error("Export failed.", { id: toastId });
+      console.error(error);
+      toast.error("Export failed. Please try again.", { id: toastId });
     } finally {
       setExporting(false);
+    }
+  };
+
+  // 🌟 OPEN EMAIL MODAL ACTION 🌟
+  const openEmailModal = () => {
+    setEmailData(prev => ({
+      ...prev,
+      subject: `Resume - ${resumeData.profileInfo?.fullName || 'Application'}`,
+    }));
+    setShowEmailModal(true);
+  };
+
+  // 🌟 SEND EMAIL ACTION (API CALL) 🌟
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!emailData.recipientEmail) {
+      toast.error("Recipient email is required!");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    const toastId = toast.loading("Preparing document & sending email...");
+
+    try {
+      const pdf = await generatePDFObject();
+      const pdfBlob = pdf.output("blob");
+      
+      const fileName = resumeData.profileInfo?.fullName 
+        ? `${resumeData.profileInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf` 
+        : "Resume.pdf";
+
+      const formData = new FormData();
+      formData.append('recipientEmail', emailData.recipientEmail);
+      formData.append('subject', emailData.subject || 'Resume Application');
+      formData.append('message', emailData.message);
+      
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      formData.append('pdfFile', pdfFile);
+
+      const response = await api.post('/email/send-resume', formData);
+
+      if (response.data.success || response.status === 200) {
+        toast.success("Resume sent successfully!", { id: toastId });
+        setShowEmailModal(false);
+        setEmailData({ ...emailData, recipientEmail: '' }); 
+      } else {
+        toast.error("Failed to send email.", { id: toastId });
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send email. Check network or backend.", { id: toastId });
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -284,8 +374,6 @@ const Builder = () => {
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Role</label>
                     <input type="text" placeholder="e.g. Software Engineer" value={exp.role} onChange={(e) => handleArrayChange('workExperiences', idx, 'role', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                   </div>
-                  
-                  {/* CHANGED TO type="date" FOR FULL CALENDAR */}
                   <div>
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Start Date</label>
                     <input type="date" value={exp.startDate} onChange={(e) => handleArrayChange('workExperiences', idx, 'startDate', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff] text-slate-600" />
@@ -323,8 +411,6 @@ const Builder = () => {
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Institution / School</label>
                     <input type="text" placeholder="XYZ University" value={edu.institution} onChange={(e) => handleArrayChange('education', idx, 'institution', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                   </div>
-                  
-                  {/* CHANGED TO type="date" FOR FULL CALENDAR */}
                   <div>
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Start Date</label>
                     <input type="date" value={edu.startDate} onChange={(e) => handleArrayChange('education', idx, 'startDate', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff] text-slate-600" />
@@ -361,7 +447,6 @@ const Builder = () => {
                     />
                   </div>
                   
-                  {/* BOX BASED PROFICIENCY SYSTEM */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[11px] font-bold text-slate-700">Proficiency ({skill.progress || 5}/5)</label>
                     <div className="flex gap-2 mt-1">
@@ -442,7 +527,6 @@ const Builder = () => {
                   <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Issuer</label>
                   <input type="text" placeholder="Amazon" value={cert.issuer} onChange={(e) => handleArrayChange('certifications', idx, 'issuer', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                 </div>
-                {/* CALENDAR DATE PICKER (FULL DATE) */}
                 <div className="w-full sm:w-1/4">
                   <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Date</label>
                   <input type="date" value={cert.date} onChange={(e) => handleArrayChange('certifications', idx, 'date', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff] text-slate-600" />
@@ -512,6 +596,18 @@ const Builder = () => {
               <button onClick={() => setShowPreviewModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
                 Edit Resume
               </button>
+
+              <button 
+                onClick={openEmailModal} 
+                className="flex items-center justify-center p-2.5 text-slate-600 bg-slate-100 hover:bg-[#5b45ff] hover:text-white rounded-xl transition-all duration-300 group overflow-hidden"
+                title="Send via Email"
+              >
+                <Mail size={18} className="shrink-0" />
+                <span className="max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 whitespace-nowrap text-sm font-bold">
+                  Send Email
+                </span>
+              </button>
+
               <button onClick={handleExportPDF} disabled={exporting} className="px-5 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl flex items-center gap-2 transition shadow-lg shadow-[#5b45ff]/20">
                 {exporting ? <Loader2 className="animate-spin w-4 h-4" /> : <Download size={16} />} 
                 Download PDF
@@ -519,12 +615,70 @@ const Builder = () => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-10 flex justify-center custom-scrollbar">
-            {/* Modal preview uses modalResumeRef */}
             <div className="transform scale-[0.85] origin-top shadow-2xl bg-white mb-20">
                {selectedTemplate === "modern" && <ModernTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
                {selectedTemplate === "creative" && <CreativeTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
                {selectedTemplate === "executive" && <ExecutiveTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ----- SEND EMAIL MODAL ----- */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-2 text-[#5b45ff] font-bold text-lg">
+                <Mail size={20} /> Send Resume via Email
+              </div>
+              <button onClick={() => setShowEmailModal(false)} className="text-slate-400 hover:text-slate-700 transition">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSendEmail} className="p-6 space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 mb-1 block">Recipient Email <span className="text-red-500">*</span></label>
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="hr@company.com" 
+                  value={emailData.recipientEmail} 
+                  onChange={e => setEmailData({...emailData, recipientEmail: e.target.value})} 
+                  className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" 
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 mb-1 block">Subject</label>
+                <input 
+                  type="text" 
+                  placeholder="Resume Application" 
+                  value={emailData.subject} 
+                  onChange={e => setEmailData({...emailData, subject: e.target.value})} 
+                  className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" 
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 mb-1 block">Message</label>
+                <textarea 
+                  rows="4" 
+                  value={emailData.message} 
+                  onChange={e => setEmailData({...emailData, message: e.target.value})} 
+                  className="w-full border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm resize-none"
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowEmailModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSendingEmail} className="px-6 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl transition flex items-center gap-2 shadow-lg shadow-[#5b45ff]/20 disabled:opacity-70">
+                  {isSendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  Send Email
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -624,10 +778,8 @@ const Builder = () => {
         {/* ----- RIGHT SIDE: LIVE PREVIEW (WIDTH FIXED) ----- */}
         <div className="hidden lg:flex flex-1 items-start justify-center p-4 xl:p-8 bg-slate-100 overflow-y-auto custom-scrollbar relative">
           <div className="sticky top-4 xl:top-8 w-full flex justify-center">
-            {/* Properly scaled to fit perfectly within its exact half screen */}
             <div className="transform scale-[0.55] xl:scale-[0.7] 2xl:scale-[0.8] origin-top shadow-2xl transition-all duration-300 pointer-events-none">
               
-              {/* Added ref={resumeRef} here so right side updates immediately and gets captured if needed */}
               {selectedTemplate === "modern" && <ModernTemplate ref={resumeRef} data={resumeData} color={themeColor} />}
               {selectedTemplate === "creative" && <CreativeTemplate ref={resumeRef} data={resumeData} color={themeColor} />}
               {selectedTemplate === "executive" && <ExecutiveTemplate ref={resumeRef} data={resumeData} color={themeColor} />}
@@ -645,6 +797,8 @@ const Builder = () => {
         currentTemplate={selectedTemplate}
         onSelectColor={(c) => setThemeColor(c)}  
         currentColor={themeColor}
+        isPremium={isPremium} // 🌟 Passed Subscription Status
+        onUpgradeSuccess={checkSubscriptionStatus} // 🌟 Passed Refresh function
       />
     </div>
   );

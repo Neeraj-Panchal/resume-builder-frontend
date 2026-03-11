@@ -1,54 +1,165 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, CheckCircle2, Palette, Sparkles, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, CheckCircle2, Palette, Sparkles, Lock, Crown, ShieldCheck, Zap, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import api from '../api/axios';
 
 const ThemeModal = ({ 
   isOpen, 
   onClose, 
   onSelectTemplate, 
   currentTemplate, 
-  onSelectColor,     // NAYA PROP
-  currentColor       // NAYA PROP
+  onSelectColor,
+  currentColor,
+  isPremium,
+  onUpgradeSuccess
 }) => {
   const [activeTab, setActiveTab] = useState('Templates');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   if (!isOpen) return null;
 
+  // 🌟 TEMPLATES CONFIG
   const templates = [
     {
       id: 'modern',
       name: 'Modern Professional',
       description: 'Clean, sleek layout with smart spacing and accents.',
-      badge: 'Popular',
-      previewType: 'modern'
+      badge: 'Free',
+      previewType: 'modern',
+      isFree: true
     },
     {
       id: 'creative',
       name: 'Creative Split',
       description: 'Visual sidebar layout for modern designers & devs.',
       badge: 'Pro',
-      previewType: 'creative'
+      previewType: 'creative',
+      isFree: false
     },
     {
       id: 'executive',
       name: 'Executive Classic',
       description: 'Elegant, serif-based design optimized for ATS systems.',
-      badge: 'New',
-      previewType: 'executive'
+      badge: 'Pro',
+      previewType: 'executive',
+      isFree: false
     }
   ];
 
-  // NAYA: Color Palettes Array
+  // 🌟 COLORS CONFIG
   const colorPalettes = [
-    { id: 'purple', hex: '#5b45ff', name: 'Primary Purple' },
-    { id: 'blue', hex: '#2563eb', name: 'Ocean Blue' },
-    { id: 'emerald', hex: '#059669', name: 'Emerald Green' },
-    { id: 'rose', hex: '#e11d48', name: 'Rose Red' },
-    { id: 'amber', hex: '#d97706', name: 'Amber Glow' },
-    { id: 'slate', hex: '#334155', name: 'Classic Slate' },
-    { id: 'teal', hex: '#0d9488', name: 'Teal Shadow' },
-    { id: 'fuchsia', hex: '#c026d3', name: 'Vibrant Fuchsia' },
+    { id: 'purple', primary: '#5b45ff', shades: ['#ede9fe', '#ddd6fe', '#c4b5fd', '#8b5cf6', '#4c1d95'], isFree: true },
+    { id: 'slate', primary: '#334155', shades: ['#f1f5f9', '#e2e8f0', '#cbd5e1', '#64748b', '#0f172a'], isFree: true },
+    { id: 'blue', primary: '#2563eb', shades: ['#dbeafe', '#bfdbfe', '#93c5fd', '#3b82f6', '#1e40af'], isFree: false },
+    { id: 'pink', primary: '#db2777', shades: ['#fce7f3', '#fbcfe8', '#f9a8d4', '#db2777', '#831843'], isFree: false },
+    { id: 'emerald', primary: '#059669', shades: ['#d1fae5', '#a7f3d0', '#6ee7b7', '#10b981', '#064e3b'], isFree: false },
+    { id: 'cyan', primary: '#0891b2', shades: ['#cffafe', '#a5f3fc', '#67e8f9', '#06b6d4', '#164e63'], isFree: false },
+    { id: 'orange', primary: '#ea580c', shades: ['#ffedd5', '#fed7aa', '#fdba74', '#f97316', '#7c2d12'], isFree: false },
+    { id: 'yellow', primary: '#ca8a04', shades: ['#fef9c3', '#fef08a', '#fde047', '#eab308', '#713f12'], isFree: false },
   ];
+
+  // ----- ACTIONS -----
+  const handleTemplateClick = (template) => {
+    if (!isPremium && !template.isFree) {
+      toast.error("Unlock Premium to use this template!");
+      setActiveTab('Premium Plan');
+      return;
+    }
+    onSelectTemplate(template.id);
+  };
+
+  const handleColorClick = (palette) => {
+    if (!isPremium && !palette.isFree) {
+      toast.error("Unlock Premium to use this color palette!");
+      setActiveTab('Premium Plan');
+      return;
+    }
+    onSelectColor(palette.primary);
+  };
+
+  // ----- RAZORPAY INTEGRATION -----
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    const toastId = toast.loading("Initializing secure payment...");
+
+    try {
+      const res = await loadRazorpayScript();
+      if (!res) {
+        toast.error("Razorpay SDK failed to load. Are you online?", { id: toastId });
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // API call to backend to create order
+      const orderResponse = await api.post('/payment/create-order', { planType: 'PREMIUM' });
+      const { orderId, amount, currency } = orderResponse.data;
+
+      const options = {
+        key: "rzp_live_SOAAOuHC9QMnW9", // Use environment variables in production!
+        amount: amount.toString(),
+        currency: currency,
+        name: "Resume Builder Pro",
+        description: "Lifetime Premium Access",
+        order_id: orderId,
+        handler: async function (response) {
+          toast.loading("Verifying payment...", { id: toastId });
+          
+          try {
+            const verifyRes = await api.post('/payment/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            if (verifyRes.data.status === 'success') {
+              toast.success("Payment Successful! Welcome to Premium 🎉", { id: toastId });
+              if(onUpgradeSuccess) onUpgradeSuccess(); 
+              setActiveTab('Templates'); 
+            } else {
+              toast.error("Verification failed. Please contact support.", { id: toastId });
+            }
+          } catch (verifyError) {
+            console.error(verifyError);
+            toast.error("Verification error occurred.", { id: toastId });
+          }
+        },
+        prefill: {
+          name: "User",
+          email: "user@example.com",
+        },
+        theme: {
+          color: "#5b45ff",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on('payment.failed', function (response) {
+        toast.error(`Payment Failed: ${response.error.description}`, { id: toastId });
+      });
+
+      paymentObject.open();
+      toast.dismiss(toastId); 
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to initiate payment. Server might be down.", { id: toastId });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
@@ -61,15 +172,22 @@ const ThemeModal = ({
         {/* Modal Header */}
         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-8">
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Design Settings</h2>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              Design Settings {isPremium && <Crown size={20} className="text-yellow-500 fill-yellow-500" />}
+            </h2>
+            
+            {/* TABS */}
             <div className="flex bg-slate-100 p-1 rounded-xl">
-              {['Templates', 'Colors', 'Fonts'].map(tab => (
+              {['Templates', 'Color Palettes', 'Premium Plan'].map(tab => (
                 <button 
                   key={tab} 
                   onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-[#5b45ff] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all relative ${activeTab === tab ? 'bg-white text-[#5b45ff] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   {tab}
+                  {tab === 'Premium Plan' && !isPremium && (
+                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2 border-slate-100"></span>
+                  )}
                 </button>
               ))}
             </div>
@@ -80,131 +198,232 @@ const ThemeModal = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-8 lg:p-12 bg-[#fcfdfe] custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 lg:p-10 bg-[#fcfdfe] custom-scrollbar relative">
           
-          {/* TEMPLATES TAB */}
-          {activeTab === 'Templates' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {templates.map((template) => (
-                <div 
-                  key={template.id} 
-                  onClick={() => onSelectTemplate(template.id)}
-                  className="group cursor-pointer space-y-4"
-                >
-                  <div className={`relative aspect-[1/1.3] bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-lg ${currentTemplate === template.id ? 'border-[#5b45ff] ring-4 ring-[#5b45ff]/10' : 'border-slate-100 group-hover:border-[#5b45ff]/50 group-hover:shadow-xl'}`}>
-                    
-                    {/* Visual Previews Mockups (Tinted with current color if selected) */}
-                    <div className="w-full h-full bg-slate-50 p-4 flex flex-col gap-2 overflow-hidden opacity-60">
-                      {template.previewType === 'modern' && (
-                        <div className="space-y-3">
-                          <div className="h-2 w-full rounded-t-sm absolute top-0 left-0" style={{ backgroundColor: currentTemplate === template.id ? currentColor : '#5b45ff' }} />
-                          <div className="h-6 w-1/2 bg-slate-300 rounded mt-4" />
-                          <div className="h-2 w-1/3 rounded" style={{ backgroundColor: currentTemplate === template.id ? `${currentColor}80` : '#5b45ff80' }} />
-                          <div className="h-1 w-full bg-slate-200 rounded mt-4" />
-                          <div className="flex gap-4 mt-2">
-                            <div className="w-1/2 space-y-2"><div className="h-2 w-full bg-slate-200 rounded"/><div className="h-2 w-3/4 bg-slate-200 rounded"/></div>
-                            <div className="w-1/2 space-y-2"><div className="h-2 w-full bg-slate-200 rounded"/><div className="h-2 w-2/3 bg-slate-200 rounded"/></div>
-                          </div>
-                        </div>
-                      )}
-                      {template.previewType === 'creative' && (
-                        <div className="flex h-full gap-2 -m-4">
-                          <div className="w-1/3 h-full bg-slate-800 p-2 space-y-2"><div className="h-4 w-full rounded" style={{ backgroundColor: currentTemplate === template.id ? currentColor : '#5b45ff' }}/><div className="h-2 w-3/4 bg-slate-600 rounded mt-4"/></div>
-                          <div className="flex-1 space-y-2 p-2 pt-4"><div className="h-2 w-3/4 bg-slate-300 rounded"/><div className="h-2 w-full bg-slate-200 rounded"/></div>
-                        </div>
-                      )}
-                      {template.previewType === 'executive' && (
-                        <div className="space-y-3 flex flex-col items-center pt-2">
-                          <div className="h-4 w-2/3 bg-slate-800 rounded" style={{ backgroundColor: currentTemplate === template.id ? currentColor : '#334155' }} />
-                          <div className="h-1.5 w-1/2 bg-slate-400 rounded" />
-                          <div className="h-0.5 w-full bg-slate-800 mt-2" style={{ backgroundColor: currentTemplate === template.id ? currentColor : '#334155' }} />
-                          <div className="w-full space-y-1.5 mt-2 text-left">
-                            <div className="h-2 w-1/3 bg-slate-400 rounded" />
-                            <div className="h-1.5 w-full bg-slate-200 rounded" />
-                            <div className="h-1.5 w-full bg-slate-200 rounded" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+          <AnimatePresence mode="wait">
+            {/* 🌟 TEMPLATES TAB 🌟 */}
+            {activeTab === 'Templates' && (
+              <motion.div key="templates" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {templates.map((template) => {
+                  const isRestricted = !isPremium && !template.isFree;
 
-                    {/* Selection Overlay */}
-                    {currentTemplate === template.id && (
-                      <div className="absolute inset-0 bg-[#5b45ff]/5 flex items-center justify-center">
-                        <div className="bg-white rounded-full p-2 shadow-lg scale-110">
-                          <CheckCircle2 size={32} className="text-[#5b45ff]" />
+                  return (
+                    <div 
+                      key={template.id} 
+                      onClick={() => handleTemplateClick(template)}
+                      className={`group cursor-pointer space-y-4 relative ${isRestricted ? '' : ''}`}
+                    >
+                      <div className={`relative aspect-[1/1.3] bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden shadow-lg ${currentTemplate === template.id ? 'border-[#5b45ff] ring-4 ring-[#5b45ff]/10' : 'border-slate-100 group-hover:border-[#5b45ff]/50 group-hover:shadow-xl'}`}>
+                        
+                        {/* Premium Blur Overlay */}
+                        {isRestricted && (
+                          <div className="absolute inset-0 z-20 bg-slate-900/10 backdrop-blur-[2px] flex flex-col items-center justify-center transition-all group-hover:bg-slate-900/20">
+                             <div className="bg-white/90 p-3 rounded-full shadow-lg backdrop-blur-md mb-2">
+                               <Lock size={20} className="text-slate-700" />
+                             </div>
+                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-800 bg-white px-3 py-1 rounded-full shadow">PRO</span>
+                          </div>
+                        )}
+
+                        {/* Visual Previews Mockups */}
+                        <div className={`w-full h-full bg-slate-50 p-4 flex flex-col gap-2 overflow-hidden opacity-70 ${isRestricted ? 'grayscale-[50%]' : ''}`}>
+                          {template.previewType === 'modern' && (
+                            <div className="space-y-3">
+                              <div className="h-2 w-full rounded-t-sm absolute top-0 left-0" style={{ backgroundColor: isRestricted ? '#94a3b8' : (currentTemplate === template.id ? currentColor : '#5b45ff') }} />
+                              <div className="h-6 w-1/2 bg-slate-300 rounded mt-4" />
+                              <div className="h-2 w-1/3 rounded bg-slate-200" />
+                              <div className="h-1 w-full bg-slate-200 rounded mt-4" />
+                              <div className="flex gap-4 mt-2">
+                                <div className="w-1/2 space-y-2"><div className="h-2 w-full bg-slate-200 rounded"/><div className="h-2 w-3/4 bg-slate-200 rounded"/></div>
+                                <div className="w-1/2 space-y-2"><div className="h-2 w-full bg-slate-200 rounded"/><div className="h-2 w-2/3 bg-slate-200 rounded"/></div>
+                              </div>
+                            </div>
+                          )}
+                          {template.previewType === 'creative' && (
+                            <div className="flex h-full gap-2 -m-4">
+                              <div className="w-1/3 h-full bg-slate-800 p-2 space-y-2"><div className="h-4 w-full rounded bg-slate-600"/><div className="h-2 w-3/4 bg-slate-600 rounded mt-4"/></div>
+                              <div className="flex-1 space-y-2 p-2 pt-4"><div className="h-2 w-3/4 bg-slate-300 rounded"/><div className="h-2 w-full bg-slate-200 rounded"/></div>
+                            </div>
+                          )}
+                          {template.previewType === 'executive' && (
+                            <div className="space-y-3 flex flex-col items-center pt-2">
+                              <div className="h-4 w-2/3 bg-slate-800 rounded" />
+                              <div className="h-1.5 w-1/2 bg-slate-400 rounded" />
+                              <div className="h-0.5 w-full bg-slate-800 mt-2" />
+                              <div className="w-full space-y-1.5 mt-2 text-left">
+                                <div className="h-2 w-1/3 bg-slate-400 rounded" />
+                                <div className="h-1.5 w-full bg-slate-200 rounded" />
+                                <div className="h-1.5 w-full bg-slate-200 rounded" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Selection Overlay */}
+                        {currentTemplate === template.id && !isRestricted && (
+                          <div className="absolute inset-0 bg-[#5b45ff]/5 flex items-center justify-center z-10">
+                            <div className="bg-white rounded-full p-2 shadow-lg scale-110">
+                              <CheckCircle2 size={32} className="text-[#5b45ff]" />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Badge */}
+                        {!isRestricted && (
+                          <span className="absolute top-4 right-4 bg-white/90 backdrop-blur z-10 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-100 shadow-sm text-slate-600">
+                            {template.badge}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="px-2">
+                        <h4 className={`font-bold text-sm transition-colors ${isRestricted ? 'text-slate-400' : 'text-slate-900 group-hover:text-[#5b45ff]'}`}>
+                          {template.name}
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{template.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
+
+            {/* 🌟 COLOR PALETTES TAB 🌟 */}
+            {activeTab === 'Color Palettes' && (
+               <motion.div key="colors" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    {colorPalettes.map((palette) => {
+                      const isRestricted = !isPremium && !palette.isFree;
+
+                      return (
+                        <div 
+                          key={palette.id} 
+                          onClick={() => handleColorClick(palette)}
+                          className={`flex h-20 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border-2 relative group ${
+                            currentColor === palette.primary && !isRestricted
+                              ? 'border-[#5b45ff] ring-4 ring-[#5b45ff]/20 shadow-xl scale-[1.03] z-10' 
+                              : 'border-transparent shadow hover:shadow-md hover:scale-[1.02]'
+                          }`}
+                        >
+                          {/* Premium Overlay for Colors */}
+                          {isRestricted && (
+                            <div className="absolute inset-0 z-20 bg-slate-900/20 backdrop-blur-[1px] flex items-center justify-center transition-all group-hover:bg-slate-900/40">
+                               <Lock size={20} className="text-white drop-shadow-md" />
+                            </div>
+                          )}
+
+                          {/* Mapping the 5 shades as vertical bars */}
+                          {palette.shades.map((shade, index) => (
+                            <div 
+                              key={index} 
+                              className={`flex-1 h-full flex items-center justify-center ${isRestricted ? 'grayscale-[30%]' : ''}`} 
+                              style={{ backgroundColor: shade }}
+                            >
+                              {currentColor === palette.primary && shade === palette.primary && !isRestricted && (
+                                <CheckCircle2 size={24} className="text-white drop-shadow-md opacity-90" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    })}
+                  </div>
+               </motion.div>
+            )}
+            
+            {/* 🌟 COMPACT PREMIUM PLAN TAB 🌟 */}
+            {activeTab === 'Premium Plan' && (
+               <motion.div key="premium" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="h-full flex items-center justify-center">
+                  
+                  {isPremium ? (
+                    // IF ALREADY PREMIUM
+                    <div className="text-center space-y-6">
+                       <div className="bg-yellow-100 p-6 rounded-full inline-block mb-4">
+                         <Crown size={64} className="text-yellow-600 fill-yellow-500" />
+                       </div>
+                       <h2 className="text-3xl font-black text-slate-900">You are a Premium Member!</h2>
+                       <p className="text-slate-500 max-w-md mx-auto leading-relaxed">Thank you for your purchase. All Pro templates, advanced colors, and premium features are now fully unlocked for your account.</p>
+                       <button onClick={() => setActiveTab('Templates')} className="mt-8 px-8 py-3 bg-[#5b45ff] text-white font-bold rounded-xl shadow-lg hover:bg-[#4a36e0] transition">
+                         Go build your resume
+                       </button>
+                    </div>
+                  ) : (
+                    // COMPACT PRICING UI (FREE VS PRO)
+                    <div className="w-full max-w-3xl mx-auto flex items-stretch gap-6 py-4">
+                      
+                      {/* Standard Plan */}
+                      <div className="flex-1 bg-white border border-slate-200 rounded-[20px] p-6 opacity-90 flex flex-col shadow-sm">
+                        <div className="mb-6">
+                          <h3 className="text-lg font-black text-slate-900 mb-1">Standard Plan</h3>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-black text-slate-900">Free</span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-2 leading-relaxed">Perfect to get started and build a solid foundation.</p>
+                        </div>
+                        <ul className="space-y-3 text-xs font-medium text-slate-600 flex-1">
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-green-500" /> 1 Standard Template</li>
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-green-500" /> 2 Basic Color Palettes</li>
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-green-500" /> Unlimited PDF Downloads</li>
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-green-500" /> Direct Email Sending</li>
+                          <li className="flex items-center gap-3 opacity-40"><Lock size={14} /> Premium Pro Templates</li>
+                          <li className="flex items-center gap-3 opacity-40"><Lock size={14} /> Advanced Color Themes</li>
+                        </ul>
+                        <div className="mt-6 p-2.5 bg-slate-100 rounded-lg text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          Current Plan
                         </div>
                       </div>
-                    )}
 
-                    {/* Badge */}
-                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-100 shadow-sm text-slate-600">
-                      {template.badge}
-                    </span>
-                  </div>
+                      {/* Premium Plan */}
+                      <div className="flex-[1.1] bg-[#0f172a] rounded-[20px] p-6 flex flex-col relative shadow-2xl border border-slate-700">
+                        <div className="absolute top-0 right-6 bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-950 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-b-md shadow-md flex items-center gap-1">
+                           <Sparkles size={10} /> Recommended
+                        </div>
 
-                  <div className="px-2">
-                    <h4 className="font-bold text-slate-900 text-sm group-hover:text-[#5b45ff] transition-colors">{template.name}</h4>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{template.description}</p>
-                  </div>
-                </div>
-              ))}
-
-              {/* Locked/Coming Soon Placeholder */}
-              <div className="opacity-60 space-y-4 cursor-not-allowed group">
-                <div className="aspect-[1/1.3] bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-3 relative overflow-hidden group-hover:bg-slate-100 transition">
-                  <Lock size={28} className="text-slate-400" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-200 px-3 py-1 rounded-full">Coming Soon</span>
-                </div>
-                <div className="px-2">
-                  <h4 className="font-bold text-slate-500 text-sm flex items-center gap-1">Minimal Dark <Sparkles size={12}/></h4>
-                  <p className="text-xs text-slate-400 mt-1 italic">Exclusive for premium users</p>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* NAYA: COLORS TAB */}
-          {activeTab === 'Colors' && (
-             <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-10">
-                  <Palette size={40} className="mx-auto mb-4 text-[#5b45ff]" />
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Accent Colors</h3>
-                  <p className="text-slate-500 text-sm">Choose a color that fits your professional brand.</p>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-                  {colorPalettes.map((c) => (
-                    <div key={c.id} className="flex flex-col items-center gap-3 cursor-pointer group" onClick={() => onSelectColor(c.hex)}>
-                      <div 
-                        className={`w-16 h-16 rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${currentColor === c.hex ? 'ring-4 ring-offset-4 scale-110' : 'hover:scale-105 hover:shadow-xl'}`}
-                        style={{ backgroundColor: c.hex, '--tw-ring-color': c.hex }}
-                      >
-                        {currentColor === c.hex && <CheckCircle2 size={28} className="text-white drop-shadow-md" />}
+                        <div className="mb-6">
+                          <h3 className="text-xl font-black text-white mb-1 flex items-center gap-2">Resume Pro <Crown size={18} className="text-yellow-400 fill-yellow-400" /></h3>
+                          <div className="flex items-baseline gap-1 text-white">
+                            <span className="text-base">₹</span>
+                            <span className="text-4xl font-black">99</span>
+                            <span className="text-slate-400 text-[11px]">/lifetime</span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2 leading-relaxed">Unlock everything and stand out to recruiters.</p>
+                        </div>
+                        <ul className="space-y-3 text-xs font-medium text-slate-300 flex-1">
+                          <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-[#5b45ff]" /> <strong>All Premium Templates</strong> (Creative & Executive)</li>
+                          <li className="flex items-center gap-3 text-white"><CheckCircle2 size={16} className="text-[#5b45ff]" /> <strong>All Advanced Color Palettes</strong></li>
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-[#5b45ff]" /> One-time payment, lifetime access</li>
+                          <li className="flex items-center gap-3"><CheckCircle2 size={16} className="text-[#5b45ff]" /> Priority Support</li>
+                        </ul>
+                        <button 
+                          onClick={handlePayment}
+                          disabled={isProcessingPayment}
+                          className="mt-6 w-full bg-gradient-to-r from-[#5b45ff] to-[#8b5cf6] text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(91,69,255,0.4)] transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                          {isProcessingPayment ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                          {isProcessingPayment ? "Processing..." : "Upgrade to Pro"}
+                        </button>
+                        <div className="text-center mt-3 flex items-center justify-center gap-1 opacity-50">
+                           <Lock size={10} className="text-slate-300" /> <span className="text-[9px] text-slate-300 uppercase tracking-widest">Secured by Razorpay</span>
+                        </div>
                       </div>
-                      <span className={`text-[11px] font-bold uppercase tracking-wider transition-colors ${currentColor === c.hex ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'}`}>
-                        {c.name}
-                      </span>
+
                     </div>
-                  ))}
-                </div>
-             </div>
-          )}
-          
-          {activeTab === 'Fonts' && (
-             <div className="flex flex-col items-center justify-center h-full text-slate-400 py-20">
-                <p className="font-bold uppercase text-xs tracking-widest">Custom Fonts coming soon</p>
-             </div>
-          )}
+                  )}
+               </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Modal Footer */}
         <div className="px-8 py-6 border-t border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <p className="text-xs text-slate-500 font-medium">Selected Template: <span className="font-bold text-slate-900 capitalize">{currentTemplate}</span></p>
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium border-l border-slate-300 pl-4">
-              Color: <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentColor }}></div>
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium border-l border-slate-300 pl-4">
+              Accent Color: <div className="w-4 h-4 rounded-full border shadow-sm" style={{ backgroundColor: currentColor }}></div>
             </div>
+            
+            {/* Show tiny premium tag in footer if pro */}
+            {isPremium && <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border border-yellow-200 ml-2">Pro User</span>}
           </div>
           <button 
             onClick={onClose} 
