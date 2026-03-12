@@ -7,6 +7,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Builder from './pages/Builder'; // <-- YEH IMPORT ZARURI HAI
 import ProtectedRoute from './components/ProtectedRoute';
+import About from './pages/About';
+import Services from './pages/Services';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
         
         <Route path="/dashboard" element={
           <ProtectedRoute>
