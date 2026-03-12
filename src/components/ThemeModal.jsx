@@ -106,7 +106,7 @@ const ThemeModal = ({
       const { orderId, amount, currency } = orderResponse.data;
 
       const options = {
-        key: "rzp_live_SOAAOuHC9QMnW9", // Use environment variables in production!
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
         amount: amount.toString(),
         currency: currency,
         name: "Resume Builder Pro",
