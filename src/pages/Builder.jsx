@@ -597,7 +597,7 @@ const Builder = () => {
                 Edit Resume
               </button>
 
-              <button 
+              {/* <button 
                 onClick={openEmailModal} 
                 className="flex items-center justify-center p-2.5 text-slate-600 bg-slate-100 hover:bg-[#5b45ff] hover:text-white rounded-xl transition-all duration-300 group overflow-hidden"
                 title="Send via Email"
@@ -606,7 +606,7 @@ const Builder = () => {
                 <span className="max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 whitespace-nowrap text-sm font-bold">
                   Send Email
                 </span>
-              </button>
+              </button> */}
 
               <button onClick={handleExportPDF} disabled={exporting} className="px-5 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl flex items-center gap-2 transition shadow-lg shadow-[#5b45ff]/20">
                 {exporting ? <Loader2 className="animate-spin w-4 h-4" /> : <Download size={16} />} 
