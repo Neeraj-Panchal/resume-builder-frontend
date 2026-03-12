@@ -85,10 +85,7 @@ const Login = () => {
           <div className="flex justify-between items-center px-1">
             <label className="flex items-center text-sm text-slate-500 cursor-pointer">
               <input type="checkbox" className="mr-2 rounded text-[#5b45ff] focus:ring-[#5b45ff]" /> Remember me
-            </label>
-            <button type="button" className="text-sm font-bold text-[#5b45ff] hover:underline transition">
-              Forgot password?
-            </button>
+            </label> 
           </div>
 
           <button type="submit" disabled={loading} className="w-full bg-[#3421c0] hover:bg-[#28189c] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#3421c0]/30 flex justify-center items-center mt-6">

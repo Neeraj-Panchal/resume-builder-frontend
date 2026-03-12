@@ -25,7 +25,7 @@ const Builder = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [themeColor, setThemeColor] = useState("#5b45ff");
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-  const [isPremium, setIsPremium] = useState(false); // 🌟 NEW: Subscription status
+  const [isPremium, setIsPremium] = useState(false);
   
   // Wizard, Preview & Email States
   const [activeStep, setActiveStep] = useState(0);
@@ -53,7 +53,6 @@ const Builder = () => {
     { title: "Interests", icon: <Heart size={20}/> },
   ];
 
-  // ----- SAFE INITIAL STATE -----
   const [resumeData, setResumeData] = useState({
     title: "",
     profileInfo: { fullName: "", designation: "", summary: "", profilePreviewUrl: "" },
@@ -67,16 +66,13 @@ const Builder = () => {
     interests: [],
   });
 
-  // ----- FETCH DATA -----
   useEffect(() => {
     if (id) fetchResumeDetails();
-    checkSubscriptionStatus(); // 🌟 NEW: Check premium status on load
+    checkSubscriptionStatus();
   }, [id]);
 
-  // 🌟 NEW: Function to check if user is Premium 🌟
   const checkSubscriptionStatus = async () => {
     try {
-      // Calls your TemplatesController GET /api/templates
       const response = await api.get('/templates');
       if (response.data && response.data.isPremium !== undefined) {
         setIsPremium(response.data.isPremium);
@@ -123,7 +119,6 @@ const Builder = () => {
     }
   };
 
-  // ----- ACTIONS -----
   const handleSave = async (showToast = true) => {
     setSaving(true);
     try {
@@ -168,7 +163,6 @@ const Builder = () => {
     setActiveStep((prev) => Math.max(prev - 1, 0));
   };
 
-  // 🌟 HELPER: GENERATE PDF OBJECT (Used for both Download and Email) 🌟
   const generatePDFObject = async () => {
     const targetRef = showPreviewModal ? modalResumeRef.current : resumeRef.current;
     if (!targetRef) throw new Error("Resume not ready yet.");
@@ -215,7 +209,7 @@ const Builder = () => {
     return pdf;
   };
 
-  // 🌟 DOWNLOAD PDF ACTION 🌟
+  // 🌟 MODIFIED DOWNLOAD LOGIC (Now increments Global Download Count) 🌟
   const handleExportPDF = async () => {
     setExporting(true);
     const toastId = toast.loading("Generating HD PDF...");
@@ -226,6 +220,11 @@ const Builder = () => {
         : "My_Resume.pdf";
       
       pdf.save(fileName);
+      
+      // Increment download count in local storage to reflect in Dashboard instantly
+      const currentCount = parseInt(localStorage.getItem('resumeDownloads') || '0', 10);
+      localStorage.setItem('resumeDownloads', (currentCount + 1).toString());
+
       toast.success("Downloaded successfully!", { id: toastId });
     } catch (error) {
       console.error(error);
@@ -235,16 +234,6 @@ const Builder = () => {
     }
   };
 
-  // 🌟 OPEN EMAIL MODAL ACTION 🌟
-  const openEmailModal = () => {
-    setEmailData(prev => ({
-      ...prev,
-      subject: `Resume - ${resumeData.profileInfo?.fullName || 'Application'}`,
-    }));
-    setShowEmailModal(true);
-  };
-
-  // 🌟 SEND EMAIL ACTION (API CALL) 🌟
   const handleSendEmail = async (e) => {
     e.preventDefault();
     if (!emailData.recipientEmail) {
@@ -289,7 +278,6 @@ const Builder = () => {
     }
   };
 
-  // ----- INPUT HANDLERS -----
   const handleObjectChange = (section, e) => {
     setResumeData((prev) => ({
       ...prev,
@@ -325,16 +313,16 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-8">
             <section className="space-y-4">
               <h3 className="text-lg font-bold text-[#5b45ff] border-b pb-2">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 sm:col-span-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="col-span-1">
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Full Name</label>
                   <input type="text" name="fullName" value={resumeData.profileInfo?.fullName || ""} onChange={(e) => handleObjectChange('profileInfo', e)} placeholder="John Doe" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" />
                 </div>
-                <div className="col-span-2 sm:col-span-1">
+                <div className="col-span-1">
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Designation</label>
                   <input type="text" name="designation" value={resumeData.profileInfo?.designation || ""} onChange={(e) => handleObjectChange('profileInfo', e)} placeholder="UI/UX Designer" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Professional Summary</label>
                   <textarea name="summary" value={resumeData.profileInfo?.summary || ""} onChange={(e) => handleObjectChange('profileInfo', e)} rows="4" placeholder="Brief introduction..." className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm resize-none" />
                 </div>
@@ -343,7 +331,7 @@ const Builder = () => {
 
             <section className="space-y-4">
               <h3 className="text-lg font-bold text-[#5b45ff] border-b pb-2">Contact Details</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input type="email" name="email" value={resumeData.contactInfo?.email || ""} onChange={(e) => handleObjectChange('contactInfo', e)} placeholder="Email Address" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" />
                 <input type="text" name="phone" value={resumeData.contactInfo?.phone || ""} onChange={(e) => handleObjectChange('contactInfo', e)} placeholder="Phone Number" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" />
                 <input type="text" name="location" value={resumeData.contactInfo?.location || ""} onChange={(e) => handleObjectChange('contactInfo', e)} placeholder="City, Country" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 outline-none focus:border-[#5b45ff] text-sm" />
@@ -360,12 +348,12 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Work Experience</h3>
-              <button onClick={() => addArrayItem('workExperiences', { company: "", role: "", startDate: "", endDate: "", description: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Experience</button>
+              <button onClick={() => addArrayItem('workExperiences', { company: "", role: "", startDate: "", endDate: "", description: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Experience</span><span className="sm:hidden">Add</span></button>
             </div>
             {(resumeData.workExperiences || []).map((exp, idx) => (
-              <div key={idx} className="p-5 border border-slate-200 rounded-xl bg-slate-50 relative space-y-4">
-                <button onClick={() => removeArrayItem('workExperiences', idx)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition"><Trash2 size={18}/></button>
-                <div className="grid grid-cols-2 gap-4 pr-8">
+              <div key={idx} className="p-4 sm:p-5 border border-slate-200 rounded-xl bg-slate-50 relative space-y-4">
+                <button onClick={() => removeArrayItem('workExperiences', idx)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500 transition"><Trash2 size={18}/></button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-6 sm:pr-8">
                   <div>
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Company</label>
                     <input type="text" placeholder="e.g. Google" value={exp.company} onChange={(e) => handleArrayChange('workExperiences', idx, 'company', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
@@ -397,12 +385,12 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Education</h3>
-              <button onClick={() => addArrayItem('education', { degree: "", institution: "", startDate: "", endDate: "", Marks: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Education</button>
+              <button onClick={() => addArrayItem('education', { degree: "", institution: "", startDate: "", endDate: "", Marks: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Education</span><span className="sm:hidden">Add</span></button>
             </div>
             {(resumeData.education || []).map((edu, idx) => (
-              <div key={idx} className="p-5 border border-slate-200 rounded-xl bg-slate-50 relative space-y-4">
-                <button onClick={() => removeArrayItem('education', idx)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition"><Trash2 size={18}/></button>
-                <div className="grid grid-cols-2 gap-4 pr-8">
+              <div key={idx} className="p-4 sm:p-5 border border-slate-200 rounded-xl bg-slate-50 relative space-y-4">
+                <button onClick={() => removeArrayItem('education', idx)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500 transition"><Trash2 size={18}/></button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pr-6 sm:pr-8">
                   <div>
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Degree / Course</label>
                     <input type="text" placeholder="B.Tech Computer Science" value={edu.degree} onChange={(e) => handleArrayChange('education', idx, 'degree', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
@@ -419,7 +407,7 @@ const Builder = () => {
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">End Date</label>
                     <input type="date" value={edu.endDate} onChange={(e) => handleArrayChange('education', idx, 'endDate', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff] text-slate-600" />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1 sm:col-span-2">
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Marks / CGPA</label>
                     <input type="text" placeholder="e.g. 8.5 CGPA or 90%" value={edu.Marks} onChange={(e) => handleArrayChange('education', idx, 'Marks', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                   </div>
@@ -435,8 +423,8 @@ const Builder = () => {
             <h3 className="text-lg font-bold text-[#5b45ff] mb-4">Skills</h3>
             <div className="space-y-4">
               {(resumeData.skills || []).map((skill, idx) => (
-                <div key={idx} className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm flex items-center justify-between">
-                  <div className="flex flex-col gap-1 w-1/3">
+                <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+                  <div className="flex flex-col gap-1 w-full sm:w-1/3">
                     <label className="text-[11px] font-bold text-slate-700">Skill Name</label>
                     <input 
                       type="text" 
@@ -447,14 +435,14 @@ const Builder = () => {
                     />
                   </div>
                   
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 w-full sm:w-auto">
                     <label className="text-[11px] font-bold text-slate-700">Proficiency ({skill.progress || 5}/5)</label>
                     <div className="flex gap-2 mt-1">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
                           onClick={() => handleArrayChange('skills', idx, 'progress', level)}
-                          className={`w-7 h-7 rounded-md cursor-pointer transition-all duration-200 ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md cursor-pointer transition-all duration-200 ${
                             (skill.progress || 5) >= level 
                               ? 'bg-[#5b45ff] shadow-[0_2px_10px_-2px_rgba(91,69,255,0.5)] scale-105' 
                               : 'bg-slate-100 hover:bg-[#5b45ff]/20'
@@ -464,13 +452,13 @@ const Builder = () => {
                     </div>
                   </div>
 
-                  <button onClick={() => removeArrayItem('skills', idx)} className="p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition">
+                  <button onClick={() => removeArrayItem('skills', idx)} className="self-end sm:self-auto p-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition">
                     <Trash2 size={18}/>
                   </button>
                 </div>
               ))}
             </div>
-            <button onClick={() => addArrayItem('skills', { name: "", progress: 5 })} className="text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 px-5 py-2.5 text-sm font-bold rounded-xl transition flex items-center gap-2 mt-4">
+            <button onClick={() => addArrayItem('skills', { name: "", progress: 5 })} className="text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 px-4 py-2 text-sm font-bold rounded-xl transition flex items-center gap-2 mt-4">
               <Plus size={16}/> Add Skill
             </button>
           </div>
@@ -481,15 +469,15 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Projects</h3>
-              <button onClick={() => addArrayItem('projects', { projectTitle: "", description: "", github: "", liveDemo: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Project</button>
+              <button onClick={() => addArrayItem('projects', { projectTitle: "", description: "", github: "", liveDemo: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Project</span><span className="sm:hidden">Add</span></button>
             </div>
             {(resumeData.projects || []).map((proj, idx) => (
               <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 relative space-y-3">
                 <button onClick={() => removeArrayItem('projects', idx)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>
-                <div className="grid grid-cols-2 gap-3 pr-6">
-                  <div className="col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-6">
+                  <div className="col-span-1 sm:col-span-2">
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Project Title</label>
-                    <input type="text" placeholder="E-commerce App" value={proj.projectTitle} onChange={(e) => handleArrayChange('projects', idx, 'projectTitle', e.target.value)} className="col-span-2 w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
+                    <input type="text" placeholder="E-commerce App" value={proj.projectTitle} onChange={(e) => handleArrayChange('projects', idx, 'projectTitle', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                   </div>
                   <div>
                     <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">GitHub Link</label>
@@ -514,12 +502,12 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Certifications</h3>
-              <button onClick={() => addArrayItem('certifications', { title: "", issuer: "", date: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Certification</button>
+              <button onClick={() => addArrayItem('certifications', { title: "", issuer: "", date: "" })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Certification</span><span className="sm:hidden">Add</span></button>
             </div>
             {(resumeData.certifications || []).map((cert, idx) => (
-              <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 relative flex gap-3 pr-8 flex-col sm:flex-row">
-                <button onClick={() => removeArrayItem('certifications', idx)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>
-                <div className="flex-1">
+              <div key={idx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 relative flex gap-3 pr-6 flex-col sm:flex-row">
+                <button onClick={() => removeArrayItem('certifications', idx)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500"><Trash2 size={16}/></button>
+                <div className="flex-1 w-full">
                   <label className="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Certification Title</label>
                   <input type="text" placeholder="AWS Certified Developer" value={cert.title} onChange={(e) => handleArrayChange('certifications', idx, 'title', e.target.value)} className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#5b45ff]" />
                 </div>
@@ -541,12 +529,12 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Languages</h3>
-              <button onClick={() => addArrayItem('languages', { name: "", progress: 100 })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Language</button>
+              <button onClick={() => addArrayItem('languages', { name: "", progress: 100 })} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Language</span><span className="sm:hidden">Add</span></button>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {(resumeData.languages || []).map((lang, idx) => (
                 <div key={idx} className="flex items-center gap-2 bg-slate-50 border border-slate-200 pl-3 pr-1 py-1.5 rounded-full group shadow-sm">
-                  <input type="text" placeholder="e.g. English" value={lang.name} onChange={(e) => handleArrayChange('languages', idx, 'name', e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-24" />
+                  <input type="text" placeholder="e.g. English" value={lang.name} onChange={(e) => handleArrayChange('languages', idx, 'name', e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-20 sm:w-24" />
                   <button onClick={() => removeArrayItem('languages', idx)} className="p-1 hover:bg-red-100 hover:text-red-500 rounded-full text-slate-400 opacity-50 group-hover:opacity-100 transition"><Trash2 size={14}/></button>
                 </div>
               ))}
@@ -559,12 +547,12 @@ const Builder = () => {
           <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#5b45ff]">Interests / Hobbies</h3>
-              <button onClick={() => addArrayItem('interests', "")} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-2"><Plus size={16}/> Add Interest</button>
+              <button onClick={() => addArrayItem('interests', "")} className="text-[#5b45ff] hover:bg-[#5b45ff]/10 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold rounded-lg transition flex items-center gap-1 md:gap-2"><Plus size={16}/> <span className="hidden sm:inline">Add Interest</span><span className="sm:hidden">Add</span></button>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {(resumeData.interests || []).map((interest, idx) => (
                 <div key={idx} className="flex items-center gap-2 bg-slate-50 border border-slate-200 pl-3 pr-1 py-1.5 rounded-full group shadow-sm">
-                  <input type="text" placeholder="e.g. Reading" value={interest} onChange={(e) => handleStringArrayChange('interests', idx, e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-24" />
+                  <input type="text" placeholder="e.g. Reading" value={interest} onChange={(e) => handleStringArrayChange('interests', idx, e.target.value)} className="bg-transparent border-none outline-none text-sm font-bold w-20 sm:w-24" />
                   <button onClick={() => removeArrayItem('interests', idx)} className="p-1 hover:bg-red-100 hover:text-red-500 rounded-full text-slate-400 opacity-50 group-hover:opacity-100 transition"><Trash2 size={14}/></button>
                 </div>
               ))}
@@ -590,32 +578,23 @@ const Builder = () => {
       {/* ----- PREVIEW & DOWNLOAD MODAL ----- */}
       {showPreviewModal && (
         <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-sm flex flex-col overflow-hidden">
-          <div className="h-16 bg-white flex items-center justify-between px-6 shrink-0 shadow-md z-[210]">
-            <h2 className="font-bold text-xl text-slate-800">Resume Preview</h2>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setShowPreviewModal(false)} className="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-                Edit Resume
+          <div className="h-16 bg-white flex items-center justify-between px-4 md:px-6 shrink-0 shadow-md z-[210]">
+            <h2 className="font-bold text-lg md:text-xl text-slate-800">Preview</h2>
+            <div className="flex items-center gap-2 md:gap-3">
+              <button onClick={() => setShowPreviewModal(false)} className="px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+                <span className="hidden sm:inline">Edit Resume</span>
+                <span className="sm:hidden">Edit</span>
               </button>
 
-              {/* <button 
-                onClick={openEmailModal} 
-                className="flex items-center justify-center p-2.5 text-slate-600 bg-slate-100 hover:bg-[#5b45ff] hover:text-white rounded-xl transition-all duration-300 group overflow-hidden"
-                title="Send via Email"
-              >
-                <Mail size={18} className="shrink-0" />
-                <span className="max-w-0 opacity-0 group-hover:max-w-[100px] group-hover:opacity-100 group-hover:ml-2 transition-all duration-300 whitespace-nowrap text-sm font-bold">
-                  Send Email
-                </span>
-              </button> */}
-
-              <button onClick={handleExportPDF} disabled={exporting} className="px-5 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl flex items-center gap-2 transition shadow-lg shadow-[#5b45ff]/20">
+              <button onClick={handleExportPDF} disabled={exporting} className="px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl flex items-center gap-1.5 md:gap-2 transition shadow-lg shadow-[#5b45ff]/20">
                 {exporting ? <Loader2 className="animate-spin w-4 h-4" /> : <Download size={16} />} 
-                Download PDF
+                <span className="hidden sm:inline">Download PDF</span>
+                <span className="sm:hidden">Download</span>
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-10 flex justify-center custom-scrollbar">
-            <div className="transform scale-[0.85] origin-top shadow-2xl bg-white mb-20">
+          <div className="flex-1 overflow-y-auto p-4 md:p-10 flex justify-center custom-scrollbar">
+            <div className="transform scale-[0.45] sm:scale-[0.6] md:scale-[0.85] origin-top shadow-2xl bg-white mb-20">
                {selectedTemplate === "modern" && <ModernTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
                {selectedTemplate === "creative" && <CreativeTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
                {selectedTemplate === "executive" && <ExecutiveTemplate ref={modalResumeRef} data={resumeData} color={themeColor} />}
@@ -683,14 +662,16 @@ const Builder = () => {
         </div>
       )}
 
-      {/* ----- TOP NAVBAR ----- */}
-      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-50 shadow-sm shrink-0">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="p-2 hover:bg-slate-100 rounded-full transition text-slate-600">
+      {/* 🌟 100% RESPONSIVE TOP NAVBAR 🌟 */}
+      <header className="h-16 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between z-50 shadow-sm shrink-0">
+        
+        {/* Left Side: Back & Title */}
+        <div className="flex items-center gap-2 md:gap-4 w-1/2">
+          <Link to="/dashboard" className="p-2 hover:bg-slate-100 rounded-full transition text-slate-600 shrink-0">
             <ArrowLeft size={20} />
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="bg-[#5b45ff] p-1.5 rounded-lg shadow-sm">
+          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+            <div className="bg-[#5b45ff] p-1.5 rounded-lg shadow-sm hidden sm:block">
               <FileText className="text-white w-4 h-4" />
             </div>
             <input 
@@ -698,37 +679,40 @@ const Builder = () => {
               value={resumeData.title} 
               onChange={(e) => setResumeData({...resumeData, title: e.target.value})}
               placeholder="Resume Title"
-              className="text-lg font-bold tracking-tight text-slate-800 bg-transparent outline-none focus:border-b-2 focus:border-[#5b45ff] w-48 transition-all"
+              className="text-base md:text-lg font-bold tracking-tight text-slate-800 bg-transparent outline-none focus:border-b-2 focus:border-[#5b45ff] w-full md:w-48 transition-all truncate border-b-2 border-transparent"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={handleDelete} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Delete Resume">
+        {/* Right Side: Actions (Icons on mobile, Text on desktop) */}
+        <div className="flex items-center gap-1 sm:gap-3">
+          <button onClick={handleDelete} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0" title="Delete Resume">
             <Trash2 size={18} />
           </button>
           
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
+          <div className="hidden sm:block w-px h-6 bg-slate-200 mx-1"></div>
 
-          <button onClick={() => setIsThemeModalOpen(true)} className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 rounded-xl transition border border-slate-200">
-            <Palette size={16} className="text-[#5b45ff]" /> Change Theme
+          <button onClick={() => setIsThemeModalOpen(true)} className="flex items-center gap-2 p-1.5 sm:p-2 md:px-4 md:py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-100 rounded-xl transition border border-transparent md:border-slate-200 shrink-0" title="Change Theme">
+            <Palette size={18} className="text-[#5b45ff]" /> <span className="hidden md:inline">Change Theme</span>
           </button>
-          <button onClick={() => handleSave(true)} disabled={saving} className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 rounded-xl transition border border-[#5b45ff]/20">
-            {saving ? <Loader2 className="animate-spin w-4 h-4" /> : <Save size={16} />} Save
+
+          <button onClick={() => handleSave(true)} disabled={saving} className="flex items-center gap-2 p-1.5 sm:p-2 md:px-4 md:py-2.5 text-sm font-bold text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 rounded-xl transition border border-transparent md:border-[#5b45ff]/20 shrink-0" title="Save Progress">
+            {saving ? <Loader2 className="animate-spin w-5 h-5 sm:w-4 sm:h-4" /> : <Save size={18} className="sm:w-4 sm:h-4"/>} 
+            <span className="hidden md:inline">Save</span>
           </button>
           
-          <button onClick={() => setShowPreviewModal(true)} disabled={exporting} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36ff] rounded-xl transition shadow-lg shadow-[#5b45ff]/20">
-            <Eye size={16} /> Preview & Download
+          <button onClick={() => setShowPreviewModal(true)} disabled={exporting} className="flex items-center gap-2 p-1.5 sm:p-2 md:px-5 md:py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36ff] rounded-xl transition shadow-lg shadow-[#5b45ff]/20 shrink-0" title="Live Preview">
+            <Eye size={18} className="sm:w-4 sm:h-4" /> <span className="hidden md:inline">Preview & Download</span>
           </button>
         </div>
       </header>
 
       <main className="flex-1 flex overflow-hidden bg-[#f8fafc]">
         
-        {/* ----- LEFT SIDE: WIZARD FORMS (WIDTH FIXED) ----- */}
+        {/* ----- LEFT SIDE: WIZARD FORMS (WIDTH RESPONSIVE) ----- */}
         <div className="w-full lg:w-[50%] h-full flex flex-col bg-white shadow-[10px_0_30px_-15px_rgba(0,0,0,0.1)] z-10">
           
-          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0">
+          <div className="px-4 md:px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0">
              {steps.map((step, index) => (
                 <div 
                   key={index} 
@@ -741,41 +725,42 @@ const Builder = () => {
              ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
             <div className="max-w-xl mx-auto">
               {renderStepContent()}
             </div>
           </div>
 
-          <div className="p-6 border-t border-slate-100 bg-white flex justify-between items-center shrink-0">
+          {/* 🌟 RESPONSIVE BOTTOM NAVIGATION 🌟 */}
+          <div className="p-4 sm:p-6 border-t border-slate-100 bg-white flex justify-between items-center shrink-0">
              <button 
                 onClick={handlePrevStep} 
                 disabled={activeStep === 0} 
-                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex items-center gap-1 sm:gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition"
              >
-                <ChevronLeft size={16} /> Back
+                <ChevronLeft size={16} /> <span className="hidden sm:inline">Back</span>
              </button>
              
-             <div className="flex items-center gap-3">
+             <div className="flex items-center gap-2 sm:gap-3">
                <button 
                   onClick={handleSaveAndExit}
-                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 border border-[#5b45ff]/20 rounded-xl transition"
+                  className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold text-[#5b45ff] bg-[#5b45ff]/10 hover:bg-[#5b45ff]/20 border border-[#5b45ff]/20 rounded-xl transition"
                >
-                  <Save size={16} /> Save & Exit
+                  <Save size={14} className="sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Save & Exit</span><span className="sm:hidden">Exit</span>
                </button>
                
                <button 
                   onClick={handleNextStep} 
                   disabled={activeStep === steps.length - 1}
-                  className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg shadow-[#5b45ff]/20"
+                  className="flex items-center gap-1 sm:gap-2 px-5 sm:px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-[#5b45ff] hover:bg-[#4a36e0] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg shadow-[#5b45ff]/20"
                >
-                  Next <ChevronRight size={16} />
+                  Next <ChevronRight size={16} className="hidden sm:block" />
                </button>
              </div>
           </div>
         </div>
 
-        {/* ----- RIGHT SIDE: LIVE PREVIEW (WIDTH FIXED) ----- */}
+        {/* ----- RIGHT SIDE: LIVE PREVIEW (HIDDEN ON MOBILE) ----- */}
         <div className="hidden lg:flex flex-1 items-start justify-center p-4 xl:p-8 bg-slate-100 overflow-y-auto custom-scrollbar relative">
           <div className="sticky top-4 xl:top-8 w-full flex justify-center">
             <div className="transform scale-[0.55] xl:scale-[0.7] 2xl:scale-[0.8] origin-top shadow-2xl transition-all duration-300 pointer-events-none">
@@ -797,8 +782,8 @@ const Builder = () => {
         currentTemplate={selectedTemplate}
         onSelectColor={(c) => setThemeColor(c)}  
         currentColor={themeColor}
-        isPremium={isPremium} // 🌟 Passed Subscription Status
-        onUpgradeSuccess={checkSubscriptionStatus} // 🌟 Passed Refresh function
+        isPremium={isPremium} // Passed Subscription Status
+        onUpgradeSuccess={checkSubscriptionStatus} // Passed Refresh function
       />
     </div>
   );

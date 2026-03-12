@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Bell, LayoutDashboard, FileText, CreditCard, 
   Settings, LogOut, Plus, Download, User, Menu, ChevronRight, 
-  Trash2, Edit3, Crown, CheckCircle2, SearchCode, Calendar, ShieldCheck, AlertCircle, UploadCloud, Loader2
+  Trash2, Edit3, Crown, CheckCircle2, SearchCode, Calendar, ShieldCheck, AlertCircle, UploadCloud, Loader2, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios'; 
@@ -15,64 +16,83 @@ const OverviewView = ({ stats, resumes, navigate, setShowCreateModal, handleDele
   <div className="space-y-8 animate-in fade-in duration-300">
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-black text-slate-900">Dashboard Overview</h1>
-        <p className="text-slate-500 mt-1">Manage, edit, and download your resumes.</p>
+        <h1 className="text-xl md:text-2xl font-black text-slate-900">Dashboard Overview</h1>
+        <p className="text-sm md:text-base text-slate-500 mt-1">Manage, edit, and download your resumes.</p>
       </div>
       <button 
         onClick={() => setShowCreateModal(true)} 
-        className="flex items-center justify-center gap-2 bg-[#5b45ff] hover:bg-[#4a36e0] text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-[#5b45ff]/25 transition"
+        className="flex items-center justify-center gap-2 bg-[#5b45ff] hover:bg-[#4a36e0] text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold shadow-lg shadow-[#5b45ff]/25 transition"
       >
         <Plus size={18} /> Create New Resume
       </button>
     </div>
 
     {/* Stats Cards */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+      <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-sm font-bold text-slate-500 mb-1">Total Resumes</p>
-          <h3 className="text-3xl font-black text-slate-900">{stats.total}</h3>
+          <p className="text-xs md:text-sm font-bold text-slate-500 mb-1">Total Resumes</p>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-900">{stats.total}</h3>
         </div>
-        <div className="w-12 h-12 bg-[#5b45ff]/10 rounded-xl flex items-center justify-center text-[#5b45ff]"><FileText size={24} /></div>
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-[#5b45ff]/10 rounded-xl flex items-center justify-center text-[#5b45ff]"><FileText size={20} className="md:w-6 md:h-6" /></div>
       </div>
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+      <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-sm font-bold text-slate-500 mb-1">Downloads</p>
-          <h3 className="text-3xl font-black text-slate-900">{stats.downloads}</h3>
+          <p className="text-xs md:text-sm font-bold text-slate-500 mb-1">Downloads</p>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-900">{stats.downloads}</h3>
         </div>
-        <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500"><Download size={24} /></div>
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500"><Download size={20} className="md:w-6 md:h-6" /></div>
       </div>
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+      <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-sm font-bold text-slate-500 mb-1">Profile Views</p>
-          <h3 className="text-3xl font-black text-slate-900">{stats.views}</h3>
+          <p className="text-xs md:text-sm font-bold text-slate-500 mb-1">Profile Views</p>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-900">{stats.views}</h3>
         </div>
-        <div className="w-12 h-12 bg-fuchsia-500/10 rounded-xl flex items-center justify-center text-fuchsia-500"><User size={24} /></div>
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-fuchsia-500/10 rounded-xl flex items-center justify-center text-fuchsia-500"><User size={20} className="md:w-6 md:h-6" /></div>
       </div>
     </div>
 
     {/* Recent Resumes Grid */}
-    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white border border-slate-100 rounded-2xl p-5 md:p-6 shadow-sm">
       <h2 className="text-lg font-bold text-slate-900 mb-6">Recent Documents</h2>
       {resumes.length === 0 ? (
         <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-xl">
-          <p className="text-slate-500">No resumes yet. Create your first one!</p>
+          <p className="text-sm text-slate-500">No resumes yet. Create your first one!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {resumes.slice(0, 3).map((resume) => (
-            <div key={resume._id} className="group border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#5b45ff]/30 transition flex flex-col h-48 bg-slate-50 relative">
+            <div key={resume._id} className="group border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:border-[#5b45ff]/30 transition flex flex-col h-40 md:h-48 bg-slate-50 relative">
               <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
                 <FileText size={40} className="text-slate-300" />
-                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm">
-                  <button onClick={() => navigate(`/builder/${resume._id}`)} className="flex items-center gap-1.5 bg-white text-[#5b45ff] font-bold px-4 py-2 rounded-lg shadow-sm hover:scale-105 transition"><Edit3 size={16} /> Edit</button>
+                
+                {/* 🌟 DESKTOP HOVER OVERLAY (Added Delete button) 🌟 */}
+                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 hidden md:flex items-center justify-center gap-3 backdrop-blur-sm z-10">
+                  <button onClick={() => navigate(`/builder/${resume._id}`)} className="flex items-center gap-1.5 bg-white text-[#5b45ff] font-bold px-4 py-2 rounded-lg shadow-sm hover:scale-105 transition">
+                    <Edit3 size={16} /> Edit
+                  </button>
+                  <button onClick={(e) => handleDeleteResume(resume._id, e)} className="flex items-center gap-1.5 bg-red-500 text-white font-bold px-4 py-2 rounded-lg shadow-sm hover:scale-105 transition">
+                    <Trash2 size={16} /> Delete
+                  </button>
                 </div>
               </div>
-              <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
-                <div className="overflow-hidden pr-2">
-                  <h3 className="font-bold text-slate-900 truncate">{resume.title || 'Untitled Resume'}</h3>
+              
+              <div className="p-3 md:p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-2">
+                <div className="overflow-hidden flex-1">
+                  <h3 className="text-sm md:text-base font-bold text-slate-900 truncate">{resume.title || 'Untitled Resume'}</h3>
                 </div>
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded-md shrink-0">DRAFT</span>
+                
+                {/* 🌟 MOBILE VISIBLE ACTION BUTTONS 🌟 */}
+                <div className="flex items-center gap-1 md:hidden shrink-0">
+                  <button onClick={() => navigate(`/builder/${resume._id}`)} className="p-2 text-[#5b45ff] bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Edit">
+                    <Edit3 size={14} />
+                  </button>
+                  <button onClick={(e) => handleDeleteResume(resume._id, e)} className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                <span className="hidden md:inline-block px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider rounded-md shrink-0">DRAFT</span>
               </div>
             </div>
           ))}
@@ -108,15 +128,15 @@ const MyResumesView = ({ resumes, navigate, handleDeleteResume, formatDate }) =>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-300 rounded-md shadow-sm overflow-hidden">
-        <table className="w-full text-sm text-left">
+      <div className="bg-white border border-slate-300 rounded-md shadow-sm overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm text-left min-w-[600px]">
           <thead className="text-xs text-slate-600 bg-slate-100 border-b border-slate-300">
             <tr>
-              <th className="px-6 py-3 font-semibold uppercase tracking-wider">Document Name</th>
-              <th className="px-6 py-3 font-semibold uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 font-semibold uppercase tracking-wider">Created On</th>
-              <th className="px-6 py-3 font-semibold uppercase tracking-wider">Last Modified</th>
-              <th className="px-6 py-3 font-semibold uppercase tracking-wider text-right">Actions</th>
+              <th className="px-4 md:px-6 py-3 font-semibold uppercase tracking-wider">Document Name</th>
+              <th className="px-4 md:px-6 py-3 font-semibold uppercase tracking-wider">Status</th>
+              <th className="px-4 md:px-6 py-3 font-semibold uppercase tracking-wider">Created On</th>
+              <th className="px-4 md:px-6 py-3 font-semibold uppercase tracking-wider">Last Modified</th>
+              <th className="px-4 md:px-6 py-3 font-semibold uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -125,15 +145,15 @@ const MyResumesView = ({ resumes, navigate, handleDeleteResume, formatDate }) =>
             ) : (
               filtered.map((resume) => (
                 <tr key={resume._id} className="border-b border-slate-200 hover:bg-slate-50 transition">
-                  <td className="px-6 py-4 font-semibold text-[#5b45ff] flex items-center gap-2">
-                    <FileText size={16} className="text-slate-400" /> {resume.title || 'Untitled Resume'}
+                  <td className="px-4 md:px-6 py-4 font-semibold text-[#5b45ff] flex items-center gap-2">
+                    <FileText size={16} className="text-slate-400 shrink-0" /> <span className="truncate">{resume.title || 'Untitled Resume'}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 md:px-6 py-4">
                     <span className="bg-slate-100 border border-slate-300 text-slate-600 px-2 py-0.5 rounded text-xs font-medium">DRAFT</span>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">{formatDate(resume.createdAt || resume.updatedAt)}</td>
-                  <td className="px-6 py-4 text-slate-600">{formatDate(resume.updatedAt)}</td>
-                  <td className="px-6 py-4 text-right space-x-3">
+                  <td className="px-4 md:px-6 py-4 text-slate-600 whitespace-nowrap">{formatDate(resume.createdAt || resume.updatedAt)}</td>
+                  <td className="px-4 md:px-6 py-4 text-slate-600 whitespace-nowrap">{formatDate(resume.updatedAt)}</td>
+                  <td className="px-4 md:px-6 py-4 text-right space-x-3 whitespace-nowrap">
                     <button onClick={() => navigate(`/builder/${resume._id}`)} className="text-[#5b45ff] font-medium hover:underline">Edit</button>
                     <span className="text-slate-300">|</span>
                     <button onClick={(e) => handleDeleteResume(resume._id, e)} className="text-red-600 font-medium hover:underline">Delete</button>
@@ -164,8 +184,8 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white border border-slate-300 rounded-md shadow-sm">
           <div className="px-5 py-3 border-b border-slate-300 bg-slate-100"><h3 className="text-sm font-bold text-slate-800">Plan Comparison</h3></div>
-          <div className="p-5 flex divide-x divide-slate-200">
-            <div className="flex-1 pr-4">
+          <div className="p-5 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+            <div className="flex-1 pb-4 sm:pb-0 sm:pr-4">
               <h4 className="font-bold text-slate-900 mb-2">Basic (Free)</h4>
               <ul className="text-xs text-slate-600 space-y-2">
                 <li>• 1 Standard Template</li>
@@ -173,7 +193,7 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
                 <li>• Unlimited Downloads</li>
               </ul>
             </div>
-            <div className="flex-1 pl-4">
+            <div className="flex-1 pt-4 sm:pt-0 sm:pl-4">
               <h4 className="font-bold text-[#5b45ff] mb-2 flex items-center gap-1">Premium Pro <Crown size={14}/></h4>
               <ul className="text-xs text-slate-600 space-y-2">
                 <li>• ALL Executive & Creative Templates</li>
@@ -185,26 +205,26 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
         </div>
 
         <div className="bg-white border border-slate-300 rounded-md shadow-sm flex flex-col">
-          <div className="px-5 py-3 border-b border-slate-300 bg-slate-100 flex justify-between">
+          <div className="px-5 py-3 border-b border-slate-300 bg-slate-100 flex justify-between items-center">
             <h3 className="text-sm font-bold text-slate-800">Your Active Plan</h3>
             {isPremium ? <span className="text-xs font-bold text-emerald-600 flex items-center gap-1"><ShieldCheck size={14}/> Active</span> : <span className="text-xs font-bold text-slate-500">Free Tier</span>}
           </div>
           <div className="p-5 flex-1 flex flex-col justify-center">
             {isPremium && activePayment ? (
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between border-b border-slate-100 pb-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-500">Transaction ID:</span>
-                  <span className="font-mono text-slate-900">{activePayment.razorpayPaymentId}</span>
+                  <span className="font-mono text-slate-900 break-all">{activePayment.razorpayPaymentId}</span>
                 </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-500">Order ID:</span>
-                  <span className="font-mono text-slate-900">{activePayment.razorpayOrderId}</span>
+                  <span className="font-mono text-slate-900 break-all">{activePayment.razorpayOrderId}</span>
                 </div>
-                <div className="flex justify-between border-b border-slate-100 pb-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between border-b border-slate-100 pb-2">
                   <span className="text-slate-500">Amount Paid:</span>
                   <span className="font-bold text-slate-900">₹{(activePayment.amount / 100).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-slate-500">Activated On:</span>
                   <span className="text-slate-900">{formatDate(activePayment.createdAt)}</span>
                 </div>
@@ -213,7 +233,6 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
               <div className="text-center">
                 <p className="text-sm text-slate-600 mb-3">You are currently using the Basic free plan.</p>
                 <p className="text-xs text-slate-400 mb-4">Upgrade to Premium to view detailed billing and unlock pro templates.</p>
-                {/* Note: In a real app, this button would trigger the Razorpay modal here as well */}
                 <button className="bg-[#0f172a] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition">Upgrade via Builder</button>
               </div>
             )}
@@ -221,53 +240,51 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-300 rounded-md shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-300 rounded-md shadow-sm overflow-hidden overflow-x-auto">
         <div className="px-6 py-4 border-b border-slate-300 bg-slate-100">
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Payment History</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+        <table className="w-full text-sm text-left min-w-[600px]">
+          <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th className="px-6 py-3 font-semibold">Date</th>
+              <th className="px-6 py-3 font-semibold">Order ID</th>
+              <th className="px-6 py-3 font-semibold">Plan</th>
+              <th className="px-6 py-3 font-semibold">Amount</th>
+              <th className="px-6 py-3 font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paymentHistory.length === 0 ? (
               <tr>
-                <th className="px-6 py-3 font-semibold">Date</th>
-                <th className="px-6 py-3 font-semibold">Order ID</th>
-                <th className="px-6 py-3 font-semibold">Plan</th>
-                <th className="px-6 py-3 font-semibold">Amount</th>
-                <th className="px-6 py-3 font-semibold">Status</th>
+                <td colSpan="5" className="px-6 py-8 text-center text-slate-500">No payment records found.</td>
               </tr>
-            </thead>
-            <tbody>
-              {paymentHistory.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-slate-500">No payment records found.</td>
+            ) : (
+              paymentHistory.map((payment) => (
+                <tr key={payment._id} className="border-b border-slate-200 hover:bg-slate-50 transition">
+                  <td className="px-6 py-4 whitespace-nowrap text-slate-700 flex items-center gap-2">
+                    <Calendar size={14} className="text-slate-400" />
+                    {formatDate(payment.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 font-mono text-xs text-slate-500">{payment.razorpayOrderId}</td>
+                  <td className="px-6 py-4 font-semibold text-slate-800 capitalize">{payment.planType}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">₹{(payment.amount / 100).toFixed(2)}</td>
+                  <td className="px-6 py-4">
+                    {payment.status === 'paid' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase">
+                        Success
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 uppercase">
+                        Pending
+                      </span>
+                    )}
+                  </td>
                 </tr>
-              ) : (
-                paymentHistory.map((payment) => (
-                  <tr key={payment._id} className="border-b border-slate-200 hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-700 flex items-center gap-2">
-                      <Calendar size={14} className="text-slate-400" />
-                      {formatDate(payment.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 font-mono text-xs text-slate-500">{payment.razorpayOrderId}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-800 capitalize">{payment.planType}</td>
-                    <td className="px-6 py-4 font-medium text-slate-900">₹{(payment.amount / 100).toFixed(2)}</td>
-                    <td className="px-6 py-4">
-                      {payment.status === 'paid' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase">
-                          Success
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 uppercase">
-                          Pending
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -276,24 +293,24 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
 // ==========================================
 // 4. ACCOUNT SETTINGS COMPONENT (With Image Upload logic)
 // ==========================================
-const AccountSettingsView = ({ userProfile, setUserProfile, handleUpdateProfile, handleImageUpload }) => (
+const AccountSettingsView = ({ editProfile, setEditProfile, handleUpdateProfile, handleImageUpload }) => (
   <div className="animate-in fade-in duration-300 max-w-3xl">
     <div className="mb-6">
       <h2 className="text-xl font-bold text-slate-900">Account Settings</h2>
       <p className="text-sm text-slate-500">Manage your profile and authentication details.</p>
     </div>
 
-    <div className="bg-white border border-slate-300 rounded-md shadow-sm">
-      <div className="px-6 py-4 border-b border-slate-300 bg-slate-100">
+    <div className="bg-white border border-slate-300 rounded-md shadow-sm overflow-hidden">
+      <div className="px-4 md:px-6 py-4 border-b border-slate-300 bg-slate-100">
          <h3 className="text-sm font-bold text-slate-800">General Information</h3>
       </div>
-      <form onSubmit={handleUpdateProfile} className="p-6 space-y-6">
+      <form onSubmit={handleUpdateProfile} className="p-4 md:p-6 space-y-6">
         
         {/* Avatar Upload */}
-        <div className="flex items-center gap-6 pb-6 border-b border-slate-200">
-          <div className="w-20 h-20 rounded bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-400 overflow-hidden relative">
-            {userProfile.image ? (
-               <img src={userProfile.image} alt="Profile" className="w-full h-full object-cover" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 pb-6 border-b border-slate-200">
+          <div className="w-20 h-20 rounded bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-400 overflow-hidden relative shrink-0">
+            {editProfile.image ? (
+               <img src={editProfile.image} alt="Profile" className="w-full h-full object-cover" />
             ) : (
                <User size={32} />
             )}
@@ -305,7 +322,7 @@ const AccountSettingsView = ({ userProfile, setUserProfile, handleUpdateProfile,
               type="file" 
               accept="image/*"
               onChange={handleImageUpload}
-              className="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer" 
+              className="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer w-full" 
             />
           </div>
         </div>
@@ -315,8 +332,8 @@ const AccountSettingsView = ({ userProfile, setUserProfile, handleUpdateProfile,
             <label className="text-xs font-bold text-slate-700 mb-1.5 block">Full Name</label>
             <input 
               type="text" 
-              value={userProfile.name}
-              onChange={(e) => setUserProfile({...userProfile, name: e.target.value})}
+              value={editProfile.name}
+              onChange={(e) => setEditProfile({...editProfile, name: e.target.value})}
               className="w-full border border-slate-300 rounded-md p-2.5 text-sm outline-none focus:border-[#5b45ff] focus:ring-1 focus:ring-[#5b45ff]"
             />
           </div>
@@ -326,7 +343,7 @@ const AccountSettingsView = ({ userProfile, setUserProfile, handleUpdateProfile,
             </label>
             <input 
               type="email" 
-              value={userProfile.email}
+              value={editProfile.email}
               disabled
               className="w-full border border-slate-200 bg-slate-100 text-slate-500 rounded-md p-2.5 text-sm outline-none cursor-not-allowed"
             />
@@ -334,7 +351,7 @@ const AccountSettingsView = ({ userProfile, setUserProfile, handleUpdateProfile,
         </div>
 
         <div className="pt-4">
-           <button type="submit" className="bg-[#5b45ff] hover:bg-[#4a36e0] text-white px-6 py-2.5 rounded-md text-sm font-semibold transition shadow-sm">
+           <button type="submit" className="w-full sm:w-auto bg-[#5b45ff] hover:bg-[#4a36e0] text-white px-6 py-2.5 rounded-md text-sm font-semibold transition shadow-sm">
              Save Changes
            </button>
         </div>
@@ -356,12 +373,11 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ total: 0, downloads: 0, views: 0 });
   const [isPremium, setIsPremium] = useState(false); 
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
-  const [userProfile, setUserProfile] = useState({
-    name: 'Loading...',
-    email: 'loading@example.com',
-    image: null
-  });
+  // DRAFT STATE LOGIC
+  const [userProfile, setUserProfile] = useState({ name: 'Loading...', email: 'loading@example.com', image: null });
+  const [editProfile, setEditProfile] = useState({ name: '', email: '', image: null });
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newResumeTitle, setNewResumeTitle] = useState('');
@@ -376,16 +392,20 @@ const Dashboard = () => {
   useEffect(() => {
     if (activeView === 'subscription') {
       fetchPaymentHistory();
+    } else if (activeView === 'settings') {
+      setEditProfile(userProfile);
     }
-  }, [activeView]);
+  }, [activeView, userProfile]);
 
   const fetchUserProfile = () => {
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    setUserProfile({
+    const loadedProfile = {
       name: storedUser.name || 'User',
       email: storedUser.email || 'user@example.com',
-      image: storedUser.profileImage || null // 🌟 Loads image from local storage
-    });
+      image: storedUser.profileImage || null
+    };
+    setUserProfile(loadedProfile);
+    setEditProfile(loadedProfile);
   };
 
   const checkSubscriptionStatus = async () => {
@@ -404,7 +424,11 @@ const Dashboard = () => {
       const res = await api.get('/resumes');
       const fetchedResumes = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.resumes || []);
       setResumes(fetchedResumes);
-      setStats({ total: fetchedResumes.length || 0, downloads: 0, views: 0 });
+      
+      // 🌟 FETCH DOWNLOADS FROM LOCAL STORAGE 🌟
+      const localDownloadCount = parseInt(localStorage.getItem('resumeDownloads') || '0', 10);
+      
+      setStats({ total: fetchedResumes.length || 0, downloads: localDownloadCount, views: 0 });
     } catch (err) {
       console.error("Failed to fetch resumes");
     } finally {
@@ -450,23 +474,21 @@ const Dashboard = () => {
     }
   };
 
-  // 🌟 NEW: Logic to convert uploaded image to base64 for preview 🌟
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      if (file.size > 2 * 1024 * 1024) { 
         toast.error("Image size should be less than 2MB");
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUserProfile(prev => ({ ...prev, image: reader.result }));
+        setEditProfile(prev => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // 🌟 UPDATE: Saves image and name to local storage 🌟
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     const toastId = toast.loading("Updating profile...");
@@ -474,9 +496,10 @@ const Dashboard = () => {
       const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
       localStorage.setItem('user', JSON.stringify({
         ...existingUser, 
-        name: userProfile.name,
-        profileImage: userProfile.image 
+        name: editProfile.name,
+        profileImage: editProfile.image 
       }));
+      setUserProfile(editProfile);
       toast.success("Profile updated successfully", { id: toastId });
     }, 1000);
   };
@@ -494,12 +517,18 @@ const Dashboard = () => {
     return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  // Helper for Mobile menu links
+  const handleMobileNavClick = (view) => {
+    setActiveView(view);
+    setIsMobileSidebarOpen(false);
+  }
+
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans text-slate-800 overflow-hidden relative">
       
       {/* MODALS */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <h2 className="text-lg font-bold text-slate-900 mb-1">Name your Resume</h2>
             <p className="text-xs text-slate-500 mb-4">Give your resume a professional title to easily identify it.</p>
@@ -520,7 +549,7 @@ const Dashboard = () => {
       )}
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[150] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-center">
             <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100"><LogOut size={24} /></div>
             <h2 className="text-lg font-bold text-slate-900 mb-1">Confirm Logout</h2>
@@ -533,8 +562,8 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* SIDEBAR (Original Look) */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-10">
+      {/* 🌟 DESKTOP SIDEBAR 🌟 */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between shrink-0 z-10">
         <div>
           <div className="h-16 flex items-center px-6 border-b border-slate-100">
             <Link to="/dashboard" className="flex items-center gap-2 text-xl font-black text-slate-800 tracking-tight">
@@ -566,14 +595,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 🌟 UPDATED: User Profile Sidebar Area (Shows Image now) 🌟 */}
         <div className="p-4 border-t border-slate-100">
           <div className="flex items-center gap-3 px-3 py-2 mb-2">
-            <div className="w-10 h-10 rounded-full bg-[#0f172a] flex items-center justify-center text-white font-bold overflow-hidden shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 uppercase font-bold overflow-hidden shrink-0">
               {userProfile.image ? (
                  <img src={userProfile.image} alt="avatar" className="w-full h-full object-cover" />
               ) : (
-                 <span className="uppercase">{userProfile.name.charAt(0)}</span>
+                 <span>{userProfile.name.charAt(0)}</span>
               )}
             </div>
             <div className="overflow-hidden">
@@ -587,15 +615,89 @@ const Dashboard = () => {
         </div>
       </aside>
 
+      {/* 🌟 MOBILE SIDEBAR DRAWER 🌟 */}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setIsMobileSidebarOpen(false)} 
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[110] lg:hidden" 
+            />
+            <motion.div 
+              initial={{ x: "-100%" }} 
+              animate={{ x: 0 }} 
+              exit={{ x: "-100%" }} 
+              transition={{ type: "tween", duration: 0.3 }} 
+              className="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-2xl z-[120] flex flex-col justify-between lg:hidden"
+            >
+              <div>
+                <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+                  <Link to="/" className="flex items-center gap-2 text-xl font-black text-slate-800 tracking-tight">
+                    <div className="bg-[#5b45ff] p-1.5 rounded-lg"><FileText size={20} className="text-white" /></div>
+                    CVPie
+                  </Link>
+                  <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 text-slate-400 hover:text-slate-800 bg-slate-50 rounded-full">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="p-4">
+                  <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-4 px-3">Main Menu</p>
+                  <nav className="space-y-1">
+                    <button onClick={() => handleMobileNavClick('overview')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition text-left ${activeView === 'overview' ? 'bg-[#5b45ff]/10 text-[#5b45ff]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                      <LayoutDashboard size={18} /> Dashboard
+                    </button>
+                    <button onClick={() => handleMobileNavClick('resumes')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition text-left ${activeView === 'resumes' ? 'bg-[#5b45ff]/10 text-[#5b45ff]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                      <FileText size={18} /> My Resumes
+                    </button>
+                    <button onClick={() => handleMobileNavClick('subscription')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition text-left ${activeView === 'subscription' ? 'bg-[#5b45ff]/10 text-[#5b45ff]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                      <CreditCard size={18} /> Subscription
+                    </button>
+                    <button onClick={() => handleMobileNavClick('settings')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition text-left ${activeView === 'settings' ? 'bg-[#5b45ff]/10 text-[#5b45ff]' : 'text-slate-500 hover:bg-slate-50'}`}>
+                      <Settings size={18} /> Settings
+                    </button>
+                  </nav>
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-slate-100">
+                <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 uppercase font-bold overflow-hidden shrink-0">
+                    {userProfile.image ? (
+                       <img src={userProfile.image} alt="avatar" className="w-full h-full object-cover" />
+                    ) : (
+                       <span>{userProfile.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-bold text-slate-800 truncate">{userProfile.name}</p>
+                    <p className="text-xs text-slate-400 truncate">{userProfile.email}</p>
+                  </div>
+                </div>
+                <button onClick={() => { setIsMobileSidebarOpen(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-500 rounded-xl transition group">
+                  <LogOut size={16} className="group-hover:text-red-500 transition" /> Logout
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        {/* TOP NAVBAR (Original Look) */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0">
+        {/* TOP NAVBAR */}
+        <header className="h-16 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 flex-1">
-            <button className="text-slate-400 hover:text-slate-600 transition lg:hidden"><Menu size={20} /></button>
+            {/* Hamburger Icon for Mobile */}
+            <button onClick={() => setIsMobileSidebarOpen(true)} className="text-slate-400 hover:text-slate-600 transition lg:hidden p-1">
+              <Menu size={24} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <button className="relative text-slate-400 hover:text-[#5b45ff] transition">
               <Bell size={20} />
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
@@ -612,12 +714,12 @@ const Dashboard = () => {
         </header>
 
         {/* DYNAMIC SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 custom-scrollbar">
           <div className="max-w-6xl mx-auto pb-10">
             {activeView === 'overview' && <OverviewView stats={stats} resumes={resumes} navigate={navigate} setShowCreateModal={setShowCreateModal} handleDeleteResume={handleDeleteResume} />}
             {activeView === 'resumes' && <MyResumesView resumes={resumes} navigate={navigate} handleDeleteResume={handleDeleteResume} formatDate={formatDate} />}
             {activeView === 'subscription' && <SubscriptionView isPremium={isPremium} paymentHistory={paymentHistory} formatDate={formatDate} />}
-            {activeView === 'settings' && <AccountSettingsView userProfile={userProfile} setUserProfile={setUserProfile} handleUpdateProfile={handleUpdateProfile} handleImageUpload={handleImageUpload} />}
+            {activeView === 'settings' && <AccountSettingsView editProfile={editProfile} setEditProfile={setEditProfile} handleUpdateProfile={handleUpdateProfile} handleImageUpload={handleImageUpload} />}
           </div>
         </div>
       </main>
