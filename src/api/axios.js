@@ -3,7 +3,9 @@ import axios from 'axios';
 
 const api = axios.create({
     // Naya Render URL yahan daal diya hai
-    baseURL: 'https://resume-builder-api-ywfi.onrender.com/api',
+    baseURL: 'https://resume-builder-api-ywfi.onrender.com',
+
+    
 });
 
 // Request Interceptor (Pehle jaisa hi rahega)
