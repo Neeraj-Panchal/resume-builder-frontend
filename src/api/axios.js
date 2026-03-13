@@ -2,11 +2,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-    // .env se URL aayega (default fallback bhi de diya hai)
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+    // Naya Render URL yahan daal diya hai
+    baseURL: 'https://resume-builder-api-ywfi.onrender.com/api',
 });
 
-// Request Interceptor: LocalStorage se token nikal kar header me daalne ke liye
+// Request Interceptor (Pehle jaisa hi rahega)
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
