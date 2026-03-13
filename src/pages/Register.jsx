@@ -38,12 +38,12 @@ const Register = () => {
       if (imageFile) {
         const imageFormData = new FormData();
         imageFormData.append('image', imageFile);
-        const uploadRes = await api.post('/auth/upload-image', imageFormData, { headers: { 'Content-Type': 'multipart/form-data' } });
+        const uploadRes = await api.post('/api/auth/upload-image', imageFormData, { headers: { 'Content-Type': 'multipart/form-data' } });
         profileImageUrl = uploadRes.data.imageUrl;
       }
       
       const registerPayload = { ...formData, profileImageUrl };
-      await api.post('/auth/register', registerPayload);
+      await api.post('/api/auth/register', registerPayload);
       
       toast.success('Registration successful!');
       // Login par seedha bhejne ke bajaye, ab Modal open karenge
@@ -61,7 +61,7 @@ const Register = () => {
     setResending(true);
     try {
       // Backend calls expects { "email": "user@example.com" }
-      await api.post('/auth/resend-verification', { email: formData.email });
+      await api.post('/api/auth/resend-verification', { email: formData.email });
       toast.success("Verification email sent again! Please check your inbox.");
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to resend verification email.');
