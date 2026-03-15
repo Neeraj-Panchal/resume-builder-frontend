@@ -73,7 +73,7 @@ const Builder = () => {
 
   const checkSubscriptionStatus = async () => {
     try {
-      const response = await api.get('/templates');
+      const response = await api.get('/api/templates');
       if (response.data && response.data.isPremium !== undefined) {
         setIsPremium(response.data.isPremium);
       }
@@ -84,7 +84,7 @@ const Builder = () => {
 
   const fetchResumeDetails = async () => {
     try {
-      const response = await api.get(`/resumes/${id}`);
+      const response = await api.get(`/api/resumes/${id}`);
       const apiData = response.data?.data || response.data?.resume || response.data;
 
       setResumeData({
@@ -123,7 +123,7 @@ const Builder = () => {
     setSaving(true);
     try {
       const payload = { ...resumeData };
-      await api.put(`/resumes/${id}`, payload);
+      await api.put(`/api/resumes/${id}`, payload);
       if(showToast) toast.success("Progress saved!");
       return true;
     } catch (error) {
@@ -137,7 +137,7 @@ const Builder = () => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this resume? This cannot be undone.")) {
       try {
-        await api.delete(`/resumes/${id}`);
+        await api.delete(`/api/resumes/${id}`);
         toast.success("Resume deleted.");
         navigate("/dashboard");
       } catch (error) {
