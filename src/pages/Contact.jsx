@@ -53,7 +53,7 @@ const Contact = () => {
       };
 
       // Call your Spring Boot Backend
-      const response = await api.post('/contact/submit', payload);
+      const response = await api.post('/api/contact/submit', payload);
 
       if (response.data.success) {
         toast.success("Message sent! We'll contact you soon.", { id: toastId });

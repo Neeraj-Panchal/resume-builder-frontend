@@ -102,7 +102,7 @@ const ThemeModal = ({
       }
 
       // API call to backend to create order
-      const orderResponse = await api.post('/payment/create-order', { planType: 'PREMIUM' });
+      const orderResponse = await api.post('/api/payment/create-order', { planType: 'PREMIUM' });
       const { orderId, amount, currency } = orderResponse.data;
 
       const options = {
@@ -116,7 +116,7 @@ const ThemeModal = ({
           toast.loading("Verifying payment...", { id: toastId });
           
           try {
-            const verifyRes = await api.post('/payment/verify', {
+            const verifyRes = await api.post('/api/payment/verify', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature

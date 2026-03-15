@@ -410,7 +410,7 @@ const Dashboard = () => {
 
   const checkSubscriptionStatus = async () => {
     try {
-      const response = await api.get('/templates');
+      const response = await api.get('/api/templates');
       if (response.data && response.data.isPremium !== undefined) {
         setIsPremium(response.data.isPremium);
       }
@@ -421,7 +421,7 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await api.get('/resumes');
+      const res = await api.get('/api/resumes');
       const fetchedResumes = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.resumes || []);
       setResumes(fetchedResumes);
       
@@ -438,7 +438,7 @@ const Dashboard = () => {
 
   const fetchPaymentHistory = async () => {
     try {
-      const res = await api.get('/payment/history'); 
+      const res = await api.get('/api/payment/history'); 
       setPaymentHistory(res.data || []);
     } catch (error) {
       console.error("Failed to fetch payment history");
@@ -448,7 +448,7 @@ const Dashboard = () => {
   const handleCreateResume = async () => {
     if (!newResumeTitle.trim()) { toast.error("Please enter a title"); return; }
     try {
-      const res = await api.post('/resumes', { title: newResumeTitle });
+      const res = await api.post('/api/resumes', { title: newResumeTitle });
       toast.success('New resume created!');
       setShowCreateModal(false);
       setNewResumeTitle('');
@@ -464,7 +464,7 @@ const Dashboard = () => {
     e.stopPropagation();
     if(window.confirm("Are you sure you want to delete this resume?")) {
       try {
-        await api.delete(`/resumes/${id}`);
+        await api.delete(`/api/resumes/${id}`);
         setResumes(resumes.filter(r => r._id !== id));
         setStats(prev => ({ ...prev, total: prev.total - 1 }));
         toast.success("Resume deleted successfully");
