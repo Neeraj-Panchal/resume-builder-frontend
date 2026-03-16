@@ -66,7 +66,7 @@ const OverviewView = ({ stats, resumes, navigate, setShowCreateModal, handleDele
               <div className="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
                 <FileText size={40} className="text-slate-300" />
                 
-                {/* 🌟 DESKTOP HOVER OVERLAY (Added Delete button) 🌟 */}
+                {/* DESKTOP HOVER OVERLAY */}
                 <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 hidden md:flex items-center justify-center gap-3 backdrop-blur-sm z-10">
                   <button onClick={() => navigate(`/builder/${resume._id}`)} className="flex items-center gap-1.5 bg-white text-[#5b45ff] font-bold px-4 py-2 rounded-lg shadow-sm hover:scale-105 transition">
                     <Edit3 size={16} /> Edit
@@ -82,7 +82,7 @@ const OverviewView = ({ stats, resumes, navigate, setShowCreateModal, handleDele
                   <h3 className="text-sm md:text-base font-bold text-slate-900 truncate">{resume.title || 'Untitled Resume'}</h3>
                 </div>
                 
-                {/* 🌟 MOBILE VISIBLE ACTION BUTTONS 🌟 */}
+                {/* MOBILE VISIBLE ACTION BUTTONS */}
                 <div className="flex items-center gap-1 md:hidden shrink-0">
                   <button onClick={() => navigate(`/builder/${resume._id}`)} className="p-2 text-[#5b45ff] bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Edit">
                     <Edit3 size={14} />
@@ -169,7 +169,7 @@ const MyResumesView = ({ resumes, navigate, handleDeleteResume, formatDate }) =>
 };
 
 // ==========================================
-// 3. SUBSCRIPTION COMPONENT (Updated with Payment)
+// 3. SUBSCRIPTION COMPONENT
 // ==========================================
 const SubscriptionView = ({ isPremium, paymentHistory, formatDate, handlePayment, isProcessingPayment }) => {
   const activePayment = paymentHistory.find(p => p.status === 'paid');
@@ -298,7 +298,7 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate, handlePayment
 };
 
 // ==========================================
-// 4. ACCOUNT SETTINGS COMPONENT (With Image Upload logic)
+// 4. ACCOUNT SETTINGS COMPONENT
 // ==========================================
 const AccountSettingsView = ({ editProfile, setEditProfile, handleUpdateProfile, handleImageUpload }) => (
   <div className="animate-in fade-in duration-300 max-w-3xl">
@@ -381,9 +381,8 @@ const Dashboard = () => {
   const [isPremium, setIsPremium] = useState(false); 
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false); // Added for razorpay
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false); 
   
-  // DRAFT STATE LOGIC
   const [userProfile, setUserProfile] = useState({ name: 'Loading...', email: 'loading@example.com', image: null });
   const [editProfile, setEditProfile] = useState({ name: '', email: '', image: null });
 
@@ -414,13 +413,25 @@ const Dashboard = () => {
     };
     setUserProfile(loadedProfile);
     setEditProfile(loadedProfile);
+    
+    // Check if user is already marked premium in local storage
+    if(storedUser.isPremium) {
+      setIsPremium(true);
+    }
   };
 
   const checkSubscriptionStatus = async () => {
     try {
       const response = await api.get('/api/templates');
+      // Added fallback check, logic should ideally hit user profile API
       if (response.data && response.data.isPremium !== undefined) {
         setIsPremium(response.data.isPremium);
+        
+        // Keep local storage in sync
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if(storedUser.isPremium !== response.data.isPremium) {
+            localStorage.setItem('user', JSON.stringify({ ...storedUser, isPremium: response.data.isPremium }));
+        }
       }
     } catch (error) {
       console.error("Failed to fetch subscription status");
@@ -433,9 +444,7 @@ const Dashboard = () => {
       const fetchedResumes = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.resumes || []);
       setResumes(fetchedResumes);
       
-      // 🌟 FETCH DOWNLOADS FROM LOCAL STORAGE 🌟
       const localDownloadCount = parseInt(localStorage.getItem('resumeDownloads') || '0', 10);
-      
       setStats({ total: fetchedResumes.length || 0, downloads: localDownloadCount, views: 0 });
     } catch (err) {
       console.error("Failed to fetch resumes");
@@ -525,14 +534,13 @@ const Dashboard = () => {
     return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Helper for Mobile menu links
   const handleMobileNavClick = (view) => {
     setActiveView(view);
     setIsMobileSidebarOpen(false);
   };
 
   // ==========================================
-  // RAZORPAY INTEGRATION LOGIC
+  // RAZORPAY INTEGRATION LOGIC (UPDATED WITH FIXES)
   // ==========================================
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -556,7 +564,6 @@ const Dashboard = () => {
         return;
       }
 
-      // API call to backend to create order
       const orderResponse = await api.post('/api/payment/create-order', { planType: 'PREMIUM' });
       const { orderId, amount, currency } = orderResponse.data;
 
@@ -577,10 +584,17 @@ const Dashboard = () => {
               razorpay_signature: response.razorpay_signature
             });
 
-            if (verifyRes.data.status === 'success') {
+            // FIXED CONDITION HERE ✅
+            if (verifyRes.data.status === 'success' || verifyRes.data.success === true) {
               toast.success("Payment Successful! Welcome to Premium 🎉", { id: toastId });
-              checkSubscriptionStatus(); // Refresh premium status
-              fetchPaymentHistory();     // Refresh history
+              
+              // FIXED LOCAL STORAGE SYNC ✅
+              const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+              localStorage.setItem('user', JSON.stringify({ ...existingUser, isPremium: true }));
+              setIsPremium(true);
+
+              checkSubscriptionStatus(); 
+              fetchPaymentHistory();     
             } else {
               toast.error("Verification failed. Please contact support.", { id: toastId });
             }
@@ -783,7 +797,6 @@ const Dashboard = () => {
         {/* TOP NAVBAR */}
         <header className="h-16 bg-white border-b border-slate-200 px-4 md:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4 flex-1">
-            {/* Hamburger Icon for Mobile */}
             <button onClick={() => setIsMobileSidebarOpen(true)} className="text-slate-400 hover:text-slate-600 transition lg:hidden p-1">
               <Menu size={24} />
             </button>

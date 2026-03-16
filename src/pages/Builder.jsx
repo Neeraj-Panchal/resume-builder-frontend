@@ -71,11 +71,23 @@ const Builder = () => {
     checkSubscriptionStatus();
   }, [id]);
 
+  // 🌟 FIXED SUBSCRIPTION CHECK LOGIC 🌟
   const checkSubscriptionStatus = async () => {
     try {
+      // Pehle Local Storage check karo for instant UI response (agar just pay kiya ho)
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (storedUser.isPremium) {
+        setIsPremium(true);
+      }
+
       const response = await api.get('/api/templates');
       if (response.data && response.data.isPremium !== undefined) {
         setIsPremium(response.data.isPremium);
+        
+        // Backend ke sath Local Storage sync rakho
+        if(storedUser.isPremium !== response.data.isPremium) {
+            localStorage.setItem('user', JSON.stringify({ ...storedUser, isPremium: response.data.isPremium }));
+        }
       }
     } catch (error) {
       console.error("Failed to fetch subscription status:", error);
@@ -209,7 +221,6 @@ const Builder = () => {
     return pdf;
   };
 
-  // 🌟 MODIFIED DOWNLOAD LOGIC (Now increments Global Download Count) 🌟
   const handleExportPDF = async () => {
     setExporting(true);
     const toastId = toast.loading("Generating HD PDF...");
@@ -221,7 +232,6 @@ const Builder = () => {
       
       pdf.save(fileName);
       
-      // Increment download count in local storage to reflect in Dashboard instantly
       const currentCount = parseInt(localStorage.getItem('resumeDownloads') || '0', 10);
       localStorage.setItem('resumeDownloads', (currentCount + 1).toString());
 

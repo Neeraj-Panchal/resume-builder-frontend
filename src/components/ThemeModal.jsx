@@ -78,7 +78,7 @@ const ThemeModal = ({
     onSelectColor(palette.primary);
   };
 
-  // ----- RAZORPAY INTEGRATION -----
+  // ----- RAZORPAY INTEGRATION (UPDATED WITH FIXES) -----
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -122,8 +122,14 @@ const ThemeModal = ({
               razorpay_signature: response.razorpay_signature
             });
 
-            if (verifyRes.data.status === 'success') {
+            // FIXED CONDITION & LOCAL STORAGE SYNC HERE ✅
+            if (verifyRes.data.status === 'success' || verifyRes.data.success === true) {
               toast.success("Payment Successful! Welcome to Premium 🎉", { id: toastId });
+              
+              // Local storage ko turant update karna zaroori hai
+              const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+              localStorage.setItem('user', JSON.stringify({ ...existingUser, isPremium: true }));
+
               if(onUpgradeSuccess) onUpgradeSuccess(); 
               setActiveTab('Templates'); 
             } else {
