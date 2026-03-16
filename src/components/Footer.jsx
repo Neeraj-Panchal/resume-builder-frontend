@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FileText, Twitter, Linkedin, Github, Zap, Mail, Phone, MapPin } from 'lucide-react';
+import { FileText, Twitter, Linkedin, Github, Zap, Mail, Phone, MapPin, Instagram } from 'lucide-react';
 
 const Footer = () => {
   const location = useLocation();
@@ -52,9 +52,9 @@ const Footer = () => {
               Crafting careers with modern technology. Create, customize, and download your perfect, ATS-friendly resume in minutes.
             </p>
             <div className="flex gap-4 pt-2">
-               <a href="#" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Twitter size={18} /></a>
-               <a href="#" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Linkedin size={18} /></a>
-               <a href="#" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Github size={18} /></a>
+               <a href="https://www.instagram.com/neerajpanchal753/" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Instagram size={18} /></a>
+               <a href="https://www.linkedin.com/in/neeraj-panchal-5b6a85263/" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Linkedin size={18} /></a>
+               <a href="https://github.com/Neeraj-Panchal" className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-purple-600 hover:border-purple-300 hover:bg-white transition shadow-sm"><Github size={18} /></a>
             </div>
           </div>
           
