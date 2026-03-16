@@ -169,9 +169,9 @@ const MyResumesView = ({ resumes, navigate, handleDeleteResume, formatDate }) =>
 };
 
 // ==========================================
-// 3. SUBSCRIPTION COMPONENT 
+// 3. SUBSCRIPTION COMPONENT (Updated with Payment)
 // ==========================================
-const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
+const SubscriptionView = ({ isPremium, paymentHistory, formatDate, handlePayment, isProcessingPayment }) => {
   const activePayment = paymentHistory.find(p => p.status === 'paid');
 
   return (
@@ -232,8 +232,15 @@ const SubscriptionView = ({ isPremium, paymentHistory, formatDate }) => {
             ) : (
               <div className="text-center">
                 <p className="text-sm text-slate-600 mb-3">You are currently using the Basic free plan.</p>
-                <p className="text-xs text-slate-400 mb-4">Upgrade to Premium to view detailed billing and unlock pro templates.</p>
-                <button className="bg-[#0f172a] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition">Upgrade via Builder</button>
+                <p className="text-xs text-slate-400 mb-4">Upgrade to Premium to unlock all pro templates and advanced color palettes for a lifetime!</p>
+                <button 
+                  onClick={handlePayment} 
+                  disabled={isProcessingPayment}
+                  className="bg-[#0f172a] text-white px-6 py-2.5 rounded-md text-sm font-bold hover:bg-slate-800 transition disabled:opacity-70 flex items-center justify-center gap-2 mx-auto shadow-md"
+                >
+                  {isProcessingPayment ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                  {isProcessingPayment ? "Processing..." : "Upgrade to Premium Now"}
+                </button>
               </div>
             )}
           </div>
@@ -374,6 +381,7 @@ const Dashboard = () => {
   const [isPremium, setIsPremium] = useState(false); 
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false); // Added for razorpay
   
   // DRAFT STATE LOGIC
   const [userProfile, setUserProfile] = useState({ name: 'Loading...', email: 'loading@example.com', image: null });
@@ -452,7 +460,7 @@ const Dashboard = () => {
       toast.success('New resume created!');
       setShowCreateModal(false);
       setNewResumeTitle('');
-      const newResumeId = res.data?._id || res.data?.data?._id || res.data?.resume?._id;
+      const newResumeId = res.data?.id || res.data?._id || res.data?.data?.id || res.data?.data?._id || res.data?.resume?.id || res.data?.resume?._id;
       if (newResumeId) navigate(`/builder/${newResumeId}`);
       else fetchDashboardData(); 
     } catch (err) {
@@ -521,7 +529,91 @@ const Dashboard = () => {
   const handleMobileNavClick = (view) => {
     setActiveView(view);
     setIsMobileSidebarOpen(false);
-  }
+  };
+
+  // ==========================================
+  // RAZORPAY INTEGRATION LOGIC
+  // ==========================================
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
+    setIsProcessingPayment(true);
+    const toastId = toast.loading("Initializing secure payment...");
+
+    try {
+      const res = await loadRazorpayScript();
+      if (!res) {
+        toast.error("Razorpay SDK failed to load. Are you online?", { id: toastId });
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // API call to backend to create order
+      const orderResponse = await api.post('/api/payment/create-order', { planType: 'PREMIUM' });
+      const { orderId, amount, currency } = orderResponse.data;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        amount: amount.toString(),
+        currency: currency,
+        name: "Resume Builder Pro",
+        description: "Lifetime Premium Access",
+        order_id: orderId,
+        handler: async function (response) {
+          toast.loading("Verifying payment...", { id: toastId });
+          
+          try {
+            const verifyRes = await api.post('/api/payment/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            if (verifyRes.data.status === 'success') {
+              toast.success("Payment Successful! Welcome to Premium 🎉", { id: toastId });
+              checkSubscriptionStatus(); // Refresh premium status
+              fetchPaymentHistory();     // Refresh history
+            } else {
+              toast.error("Verification failed. Please contact support.", { id: toastId });
+            }
+          } catch (verifyError) {
+            console.error(verifyError);
+            toast.error("Verification error occurred.", { id: toastId });
+          }
+        },
+        prefill: {
+          name: userProfile.name,
+          email: userProfile.email,
+        },
+        theme: {
+          color: "#5b45ff",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on('payment.failed', function (response) {
+        toast.error(`Payment Failed: ${response.error.description}`, { id: toastId });
+      });
+
+      paymentObject.open();
+      toast.dismiss(toastId); 
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to initiate payment. Server might be down.", { id: toastId });
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans text-slate-800 overflow-hidden relative">
@@ -718,7 +810,15 @@ const Dashboard = () => {
           <div className="max-w-6xl mx-auto pb-10">
             {activeView === 'overview' && <OverviewView stats={stats} resumes={resumes} navigate={navigate} setShowCreateModal={setShowCreateModal} handleDeleteResume={handleDeleteResume} />}
             {activeView === 'resumes' && <MyResumesView resumes={resumes} navigate={navigate} handleDeleteResume={handleDeleteResume} formatDate={formatDate} />}
-            {activeView === 'subscription' && <SubscriptionView isPremium={isPremium} paymentHistory={paymentHistory} formatDate={formatDate} />}
+            {activeView === 'subscription' && (
+              <SubscriptionView 
+                isPremium={isPremium} 
+                paymentHistory={paymentHistory} 
+                formatDate={formatDate} 
+                handlePayment={handlePayment} 
+                isProcessingPayment={isProcessingPayment} 
+              />
+            )}
             {activeView === 'settings' && <AccountSettingsView editProfile={editProfile} setEditProfile={setEditProfile} handleUpdateProfile={handleUpdateProfile} handleImageUpload={handleImageUpload} />}
           </div>
         </div>
