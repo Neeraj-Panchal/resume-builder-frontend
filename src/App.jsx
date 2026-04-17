@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import About from './pages/About';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
+import ForgotPassword from './components/ForgotPassword';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Services />} />
         <Route path="/contact" element={<Contact />} />
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
