@@ -25,12 +25,6 @@ const Services = () => {
     if (footer) footer.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleAtsClick = () => {
-    toast('ATS Score Checker is currently in process and will be available very soon!', {
-      icon: '🚧',
-      style: { borderRadius: '10px', background: '#0f172a', color: '#fff' },
-    });
-  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -88,9 +82,6 @@ const Services = () => {
               <div className="w-16 h-16 bg-slate-800 text-blue-400 border border-slate-700 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Target size={32} />
               </div>
-              <span className="bg-blue-500/20 border border-blue-500/50 text-blue-300 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-1 animate-pulse">
-                <Sparkles size={12}/> Coming Soon
-              </span>
             </div>
             <h2 className="text-3xl font-black text-white mb-4">ATS Score Check</h2>
             <p className="text-slate-400 mb-6 leading-relaxed">
@@ -102,9 +93,9 @@ const Services = () => {
               <li className="flex items-center gap-2 text-sm font-medium text-slate-300"><ShieldCheck size={18} className="text-blue-400"/> Actionable Improvement Tips</li>
             </ul>
           </div>
-          <button onClick={handleAtsClick} className="w-full py-4 bg-white/10 text-white border border-white/20 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-white/20 transition-colors backdrop-blur-sm z-10">
-            Check Availability
-          </button>
+          <Link to="/dashboard" className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/30 z-10">
+            Login to Use ATS Checker <ArrowRight size={18} />
+          </Link>
         </motion.div>
 
       </div>

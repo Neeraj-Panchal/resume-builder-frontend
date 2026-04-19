@@ -4,6 +4,7 @@ import axios from 'axios';
 const api = axios.create({
     // Naya Render URL yahan daal diya hai
     baseURL: 'https://resume-builder-api-ywfi.onrender.com',
+    // baseURL: 'http://localhost:8080',
 
     
 });
