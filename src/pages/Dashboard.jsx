@@ -591,7 +591,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   // States
-  const [activeView, setActiveView] = useState("overview");
+  const [activeView, setActiveView] = useState(() => {
+    return localStorage.getItem('lastActiveView') || 'overview';
+  });
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, downloads: 0, views: 0 });
@@ -610,6 +612,8 @@ const Dashboard = () => {
     email: "",
     image: null,
   });
+  // Asli file save karne ke liye
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newResumeTitle, setNewResumeTitle] = useState("");
@@ -620,6 +624,10 @@ const Dashboard = () => {
     checkSubscriptionStatus();
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('lastActiveView', activeView);
+  }, [activeView]);
 
   useEffect(() => {
     if (activeView === "subscription") {
@@ -634,7 +642,7 @@ const Dashboard = () => {
     const loadedProfile = {
       name: storedUser.name || "User",
       email: storedUser.email || "user@example.com",
-      image: storedUser.profileImage || null,
+      image: storedUser.profileImageUrl || storedUser.profileImage || null,
     };
     setUserProfile(loadedProfile);
     setEditProfile(loadedProfile);
@@ -743,13 +751,18 @@ const Dashboard = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
+      if (file.size > 2 * 1024 * 1024) { 
         toast.error("Image size should be less than 2MB");
         return;
       }
+      
+      // 1. ASLI FILE SAVE KARO API KE LIYE
+      setSelectedFile(file); 
+      
+      // 2. UI PREVIEW KE LIYE BASE64 BANAO
       const reader = new FileReader();
       reader.onloadend = () => {
-        setEditProfile((prev) => ({ ...prev, image: reader.result }));
+        setEditProfile(prev => ({ ...prev, image: reader.result })); 
       };
       reader.readAsDataURL(file);
     }
@@ -757,20 +770,51 @@ const Dashboard = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    const toastId = toast.loading("Updating profile...");
-    setTimeout(() => {
-      const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...existingUser,
-          name: editProfile.name,
-          profileImage: editProfile.image,
-        }),
-      );
-      setUserProfile(editProfile);
-      toast.success("Profile updated successfully", { id: toastId });
-    }, 1000);
+    const toastId = toast.loading("Saving changes...");
+
+    try {
+      let finalImageUrl = editProfile.image; // Agar photo change nahi ki, toh purani hi rahegi
+
+      // AGAR NAYI PHOTO SELECT KI HAI, TOH PEHLE UPLOAD KARO
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('image', selectedFile); // Dhyan de: 'file' ya 'image', jo backend expect kar raha ho
+
+        // YAHAN APNI UPLOAD IMAGE WALI API KA PATH DAALO (Postman se match kar lo)
+        const uploadRes = await api.post('/api/auth/upload-image', formData);
+
+        // Backend se jo Cloudinary URL aayega, usko nikal lo
+        finalImageUrl = uploadRes.data.url || uploadRes.data.imageUrl || uploadRes.data; 
+      }
+
+      // AB NAAM AUR NAYI PHOTO KA URL DATABASE MEIN SAVE KARO
+      // YAHAN APNI UPDATE PROFILE WALI API KA PATH DAALO
+      await api.put('/api/auth/profile', {
+        name: editProfile.name,
+        profileImageUrl: finalImageUrl 
+      });
+
+      // LOCAL STORAGE AUR UI UPDATE KARO
+      const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...existingUser, name: editProfile.name, profileImageUrl: finalImageUrl };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      const newProfileState = {
+        name: editProfile.name,
+        email: editProfile.email,
+        image: finalImageUrl 
+      };
+      
+      setUserProfile(updatedUser);
+      setEditProfile(updatedUser);
+      setSelectedFile(null); // File hatado kyunki upload ho chuki hai
+
+      toast.success("Profile permanently updated!", { id: toastId });
+
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      toast.error("Failed to update profile. Backend error.", { id: toastId });
+    }
   };
 
   const handleLogout = () => {
