@@ -32,14 +32,12 @@ const AtsChecker = () => {
   const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!file) return toast.error('Please upload your resume PDF');
-    // REMOVED: JD is no longer strictly required
 
     setViewMode('loading'); 
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      // Backend expects jobDescription, even if empty
       formData.append('jobDescription', jobDescription.trim());
 
       const response = await api.post('/api/ats/analyze', formData, {
@@ -55,7 +53,32 @@ const AtsChecker = () => {
       }
     } catch (error) {
       console.error('ATS Error:', error);
-      toast.error(error.response?.data?.message || 'Something went wrong. Please try again.');
+      
+      // ERROR HANDLING IMPROVED:
+      let errorMsg = "Something went wrong. Please try again.";
+      
+      if (error.response && error.response.data) {
+        // Handle direct string errors
+        if (typeof error.response.data === 'string') {
+          errorMsg = error.response.data;
+        } 
+        // Handle object errors with a message property
+        else if (error.response.data.message) {
+          errorMsg = error.response.data.message;
+        }
+        // Handle object errors with an error property
+        else if (error.response.data.error) {
+           errorMsg = error.response.data.error;
+        }
+      }
+
+      // Check specifically for AI overload errors (503 Service Unavailable)
+      if (errorMsg.includes("503") || errorMsg.includes("high demand") || errorMsg.toLowerCase().includes("ai analysis failed") || error.message.includes("503")) {
+          toast.error("AI is currently overloaded with high demand. Please try again in a few minutes. 🤖⏳", { duration: 5000 });
+      } else {
+          toast.error(errorMsg);
+      }
+
       setViewMode('input'); 
     }
   };
