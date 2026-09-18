@@ -1,24 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", sans-serif;
+}
+
 body {
-  background-color: #f4f7fe; /* Very soft premium background */
+  background-color: #f4f7fe;
+  /* Very soft premium background */
   color: #0f172a;
-  font-family: 'Titillium Web', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Hide scrollbar for cleaner look but keep functionality */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #cbd5e1;
   border-radius: 10px;
 }
+
 @keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); } 
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
+
 .animate-marquee {
-  animation: marquee 20s linear infinite;
+  animation: marquee 30s linear infinite;
 }
+
+@keyframes scroll-y-up {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scroll-y-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.animate-scroll-y-up {
+  animation: scroll-y-up 24s linear infinite;
+}
+
+.animate-scroll-y-down {
+  animation: scroll-y-down 24s linear infinite;
+}
+
+.animate-scroll-y-up-slow {
+  animation: scroll-y-up 28s linear infinite;
+}
+
+.animate-scroll-y-down-slow {
+  animation: scroll-y-down 28s linear infinite;
+}
