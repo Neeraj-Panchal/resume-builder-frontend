@@ -20,6 +20,26 @@ const Home = () => {
   const location = useLocation();
   const [openFaq, setOpenFaq] = useState(0);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState(null);
+  const [showAllBlogs, setShowAllBlogs] = useState(false);
+
+  // Lock body scroll and handle Escape key for blog reader modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedBlog(null);
+    };
+    if (selectedBlog) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedBlog]);
+
 
   // Scroll progress for Our Process step-by-step reveal
   const processRef = useRef(null);
@@ -31,11 +51,11 @@ const Home = () => {
   });
 
   useMotionValueEvent(processScrollY, "change", (latest) => {
-    if (latest < 0.18) {
+    if (latest < 0.23) {
       setVisibleStepCount(1);
-    } else if (latest >= 0.18 && latest < 0.45) {
+    } else if (latest >= 0.48 && latest < 0.70) {
       setVisibleStepCount(2);
-    } else if (latest >= 0.45 && latest < 0.72) {
+    } else if (latest >= 0.70 && latest < 0.89) {
       setVisibleStepCount(3);
     } else {
       setVisibleStepCount(4);
@@ -95,6 +115,137 @@ const Home = () => {
     { text: "I've tried many resume builders, but this one stands out. The live preview feature is a game-changer.", name: "Michael Chen", role: "Marketing Manager at Microsoft" },
     { text: "Beautiful templates and seamless editing experience. Highly recommend to anyone looking for a professional resume.", name: "Emily Davis", role: "UX Designer at Apple" }
   ];
+
+  // Blog / Latest Insights Data (Curated for Resume Builder & Career Growth)
+  const blogPosts = [
+    {
+      id: 1,
+      title: "Mastering the ATS",
+      subtitle: "How to Beat Resume Screening Robots",
+      date: "Aug 5, 2025",
+      readTime: "5 min read",
+      category: "ATS Optimization",
+      image: "/blog/blog-1.jpg",
+      description: "Learn how Applicant Tracking Systems screen candidates and the proven formatting strategies to ensure your resume reaches human recruiters.",
+      author: "Career Strategy Team",
+      content: [
+        "Over 75% of resumes are discarded by Applicant Tracking Systems (ATS) before a human recruiter ever lays eyes on them. Modern recruitment pipelines rely on software like Workday, Greenhouse, and Taleo to automatically filter candidates based on keyword matching and clear section parsing.",
+        "To ensure your resume passes ATS algorithms cleanly, use standardized section headers ('Experience', 'Education', 'Skills'), standard bullet formats, and single-column layouts. Avoid placing vital contact info or metrics inside complex graphic tables or text boxes that legacy scanners cannot parse.",
+        "Our CVPie templates are rigorously pre-tested and 100% compliant with industry ATS parsers, guaranteeing your qualifications make it directly into hiring managers' hands."
+      ],
+      takeaways: [
+        "Stick to recognized section headers that parsers index seamlessly.",
+        "Incorporate targeted hard skills and keywords directly from the job description.",
+        "Always export your resume in text-selectable PDF format."
+      ]
+    },
+    {
+      id: 2,
+      title: "Power Action Verbs",
+      subtitle: "Transforming Bullet Points Into Achievements",
+      date: "Jul 29, 2025",
+      readTime: "7 min read",
+      category: "Resume Writing",
+      image: "/blog/blog-2.jpg",
+      description: "Replace passive job descriptions with high-impact action verbs that showcase leadership, technical expertise, and measurable achievements.",
+      author: "Talent Acquisition Lead",
+      content: [
+        "One of the most frequent mistakes job seekers make is writing duty-focused bullets like 'Responsible for managing client projects' instead of outcome-focused accomplishments. Duty-based phrasing blends in; outcome-based verbs command attention.",
+        "Begin every bullet point with a decisive action verb: 'Orchestrated', 'Spearheaded', 'Engineered', 'Optimized', or 'Negotiated'. Pair that verb with the Google X-Y-Z formula: Accomplished [X], as measured by [Y], by doing [Z].",
+        "For example, instead of 'Wrote unit tests for the app', write 'Automated end-to-end test suites using Cypress, reducing regression bugs by 42% and accelerating release cycles by 2 weeks.'"
+      ],
+      takeaways: [
+        "Avoid overused clichés like 'Hard worker', 'Team player', or 'Responsible for'.",
+        "Quantify your results with dollar amounts, percentages, or saved hours.",
+        "Lead with strong, decisive verbs tailored to your seniority level."
+      ]
+    },
+    {
+      id: 3,
+      title: "The 6-Second Summary",
+      subtitle: "Crafting an Irresistible Executive Summary",
+      date: "Aug 5, 2025",
+      readTime: "5 min read",
+      category: "Career Strategy",
+      image: "/blog/blog-3.jpg",
+      description: "Stand out in six seconds or less. Discover the modern structure top executives use to pitch their career narrative with clarity.",
+      author: "Executive Career Coach",
+      content: [
+        "Recruiters spend an average of six to seven seconds reviewing an initial resume submission. If your opening professional summary doesn't immediately hook them with relevance and authority, they move on to the next candidate.",
+        "The ideal career summary is concise—three to four lines maximum. Sentence one establishes your professional identity and total years of focused experience. Sentence two spotlights your greatest quantified triumph. Sentence three connects your core competencies to the target company's business goals.",
+        "Keep it forward-looking. Rather than just recounting past duties, present yourself as a solution-oriented professional ready to deliver immediate value to the organization."
+      ],
+      takeaways: [
+        "Eliminate outdated objective statements in favor of a value-driven summary.",
+        "Highlight your highest-impact metrics right at the top of the page.",
+        "Tailor the summary's core focus to the specific industry and seniority."
+      ]
+    },
+    {
+      id: 4,
+      title: "Modern Tech Resumes",
+      subtitle: "Highlighting Engineering Skills & System Impact",
+      date: "Sep 2, 2025",
+      readTime: "6 min read",
+      category: "Engineering & Tech",
+      image: "/blog/blog-4.jpg",
+      description: "From GitHub repos to cloud scalability metrics: how modern software engineers demonstrate architecture mastery on one page.",
+      author: "Lead Tech Recruiter",
+      content: [
+        "In tech hiring, recruiters want to see your tech stack in action, not just a comma-separated list of acronyms. Detail how you leveraged specific tools to solve high-concurrency or high-reliability challenges.",
+        "Include links to verified GitHub repositories, live demo URLs, or published packages. Hiring teams value clean, maintainable code and open-source contributions more than buzzwords.",
+        "Highlight system-scale impact: database query optimization, reducing latency, cloud migration cost savings, and architectural leadership."
+      ],
+      takeaways: [
+        "Provide direct context for each framework mentioned in your skills matrix.",
+        "Include clickable links to live projects, GitHub, and production systems.",
+        "Emphasize latency reductions, cost savings, and system scalability."
+      ]
+    },
+    {
+      id: 5,
+      title: "The Networking Advantage",
+      subtitle: "Unlocking Opportunities in the Hidden Job Market",
+      date: "Sep 10, 2025",
+      readTime: "4 min read",
+      category: "Networking",
+      image: "/blog/blog-5.jpg",
+      description: "Unlocking the hidden job market. How connecting with alumni, hiring managers, and industry leaders lands unposted opportunities.",
+      author: "Career Growth Advisor",
+      content: [
+        "Up to 70% of open positions are filled through internal referrals and professional networks without ever being posted publicly on traditional job boards.",
+        "Learn how to conduct informational interviews with decision-makers, nurture meaningful connections on LinkedIn, and ask for warm introductions rather than cold pitching.",
+        "Having a polished, ATS-optimized resume ready to share when a contact requests one gives you a monumental competitive edge over standard applicants."
+      ],
+      takeaways: [
+        "Reach out to second-degree connections with personalized conversation requests.",
+        "Focus on learning and relationship building rather than immediately asking for jobs.",
+        "Keep your CVPie resume updated and shareable via instant cloud links."
+      ]
+    },
+    {
+      id: 6,
+      title: "7 Resume Red Flags",
+      subtitle: "Mistakes That Disqualify Even Exceptional Candidates",
+      date: "Sep 15, 2025",
+      readTime: "5 min read",
+      category: "Recruiter Insights",
+      image: "/blog/blog-6.jpg",
+      description: "From weird file formats to typo traps: discover the common red flags that cause recruiters to reject your profile on sight.",
+      author: "Senior HR Director",
+      content: [
+        "Even candidates with ten years of stellar experience can get filtered out due to easily avoidable oversights. Unprofessional email addresses, dense text blocks with no whitespace, and inconsistent date formatting are instant turn-offs.",
+        "Another dangerous pitfall is submitting an unformatted Word document that renders differently on different operating systems. Always submit a standardized PDF generated by a dedicated tool like CVPie.",
+        "Proofread carefully: a single glaring spelling error in a key job title raises immediate doubts about your attention to detail."
+      ],
+      takeaways: [
+        "Never submit editable docx files; stick to clean, standardized PDFs.",
+        "Ensure consistent date formatting (e.g., 'Jan 2022 – Present') across all entries.",
+        "Audit your contact details and ensure all hyperlinked URLs work flawlessly."
+      ]
+    }
+  ];
+
 
   // Core Feature Cards definition for the 3 scrolling columns
   const col1Cards = [
@@ -730,7 +881,7 @@ const Home = () => {
       </section> */}
 
       {/* 4. OUR PROCESS */}
-      <section ref={processRef} className="py-16 md:py-24 bg-white border-b border-slate-100 relative">
+      <section ref={processRef} className="py-16 md:py-20 bg-white border-b border-slate-100 relative">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header - Centered with Badge matching reference design */}
           <motion.div
@@ -877,17 +1028,205 @@ const Home = () => {
                   </ul>
 
                   {/* Learn More Action Link */}
-                  <Link
+                  {/* <Link
                     to="/register"
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-[#ff4b72] hover:text-[#e03a64] transition mt-auto group/link"
                   >
                     Learn More <ArrowRight size={13} className="group-hover/link:translate-x-1 transition-transform" />
-                  </Link>
+                  </Link> */}
                 </motion.div>
               );
             })}
           </div>
         </div>
+      </section>
+
+      {/* 4.5 📰 BLOG / LATEST INSIGHTS SECTION (Matches Reference Design) */}
+      <section id="insights" className="py-16 md:py-18 bg-white relative">
+        <div className="w-full mx-auto px-6 sm:px-12 md:px-24">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6">
+            <div>
+              <p className="text-base font-semibold text-slate-800 mb-2">Blog</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-slate-900 tracking-tight leading-tight mb-3">
+                Explore Our Latest Insights
+              </h2>
+              <p className="text-slate-500 text-base md:text-lg font-normal">
+                Discover career advice, ATS optimization strategies, and resume writing tips.
+              </p>
+            </div>
+            <div className="sm:self-center shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowAllBlogs(!showAllBlogs)}
+                className="inline-flex items-center justify-center px-6 py-2 rounded-lg border border-[#deb24e] text-slate-800 font-semibold text-sm hover:bg-amber-50/70 hover:border-amber-400 transition-all duration-200 active:scale-95 shadow-xs cursor-pointer"
+              >
+                {showAllBlogs ? "Show Less" : "View All"}
+              </button>
+            </div>
+          </div>
+
+          {/* Blog Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+            {(showAllBlogs ? blogPosts : blogPosts.slice(0, 3)).map((post, idx) => (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.1 }}
+                className="group cursor-pointer flex flex-col"
+                onClick={() => setSelectedBlog(post)}
+              >
+                {/* Image Container with Rounded Corners matching reference */}
+                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100 mb-4 shadow-xs">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Metadata: Date and Read Time on same line */}
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2.5">
+                  <span>{post.date}</span>
+                  <span>{post.readTime}</span>
+                </div>
+
+                {/* Blog Title */}
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2 tracking-tight group-hover:text-purple-600 transition-colors line-clamp-1">
+                  {post.title}
+                </h3>
+
+                {/* Excerpt Description */}
+                <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-4 font-normal">
+                  {post.description}
+                </p>
+
+                {/* Read More Link */}
+                <div className="mt-auto pt-1">
+                  <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
+                    Read More <ChevronRight size={15} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </div>
+
+        {/* Blog Article Reader Modal */}
+        <AnimatePresence>
+          {selectedBlog && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+              onClick={() => setSelectedBlog(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 my-auto text-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Top Image Banner */}
+                <div className="relative h-56 sm:h-64 w-full bg-slate-900 overflow-hidden">
+                  <img
+                    src={selectedBlog.image}
+                    alt={selectedBlog.title}
+                    className="w-full h-full object-cover opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setSelectedBlog(null)}
+                    className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md text-white flex items-center justify-center transition-colors shadow-lg cursor-pointer"
+                    aria-label="Close article"
+                  >
+                    <X size={18} />
+                  </button>
+
+                  {/* Badge & Meta on Banner */}
+                  <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-white/90 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-purple-600/90 text-white shadow-sm font-medium">
+                      {selectedBlog.category}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span>{selectedBlog.date}</span>
+                      <span>•</span>
+                      <span>{selectedBlog.readTime}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Body */}
+                <div className="p-6 sm:p-8 max-h-[60vh] overflow-y-auto space-y-6">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">
+                      {selectedBlog.title}
+                    </h2>
+                    <p className="text-base font-semibold text-purple-600">
+                      {selectedBlog.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Paragraphs */}
+                  <div className="space-y-4 text-slate-600 leading-relaxed text-sm sm:text-base">
+                    {selectedBlog.content.map((para, pIdx) => (
+                      <p key={pIdx}>{para}</p>
+                    ))}
+                  </div>
+
+                  {/* Key Takeaways Box */}
+                  {selectedBlog.takeaways && (
+                    <div className="bg-purple-50/70 border border-purple-100 rounded-2xl p-5 space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-2">
+                        <Sparkles size={14} className="text-purple-600" />
+                        Key Takeaways
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedBlog.takeaways.map((point, ptIdx) => (
+                          <li key={ptIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
+                            <CheckCircle2 size={16} className="text-purple-600 shrink-0 mt-0.5" />
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Author and Action Footer */}
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="text-xs text-slate-500">
+                      Published by <span className="font-bold text-slate-800">{selectedBlog.author}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        to="/ats-check"
+                        onClick={() => setSelectedBlog(null)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors"
+                      >
+                        Test ATS Score
+                      </Link>
+                      <Link
+                        to="/register"
+                        onClick={() => setSelectedBlog(null)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-500/20 transition-all"
+                      >
+                        Build Free Resume
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* 5. STATS BANNER */}
