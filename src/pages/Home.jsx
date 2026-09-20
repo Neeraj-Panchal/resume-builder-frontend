@@ -1048,7 +1048,7 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6">
             <div>
               <p className="text-base font-semibold text-slate-800 mb-2">Blog</p>
-              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-black text-slate-900 tracking-tight leading-tight mb-3">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-900 mb-3">
                 Explore Our Latest Insights
               </h2>
               <p className="text-slate-500 text-base md:text-lg font-normal">
