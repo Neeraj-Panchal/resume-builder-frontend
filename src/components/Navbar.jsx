@@ -64,13 +64,13 @@ const Navbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-8 md:gap-20">
-            <Link to="/" onClick={(e) => handleNavClick('/', e)} className={`text-xl font-medium transition-all ${isActive('/') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>Home</Link>
+            <Link to="/" onClick={(e) => handleNavClick('/', e)} className={`text-xl font-medium transition-all ${isActive('/') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>HOME</Link>
 
-            <Link to="/about" onClick={(e) => handleNavClick('/about', e)} className={`text-xl font-medium transition-all ${isActive('/about') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>About</Link>
+            <Link to="/about" onClick={(e) => handleNavClick('/about', e)} className={`text-xl font-medium transition-all ${isActive('/about') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>ABOUT</Link>
 
-            <Link to="/services" onClick={(e) => handleNavClick('/services', e)} className={`text-xl font-medium transition-all ${isActive('/services') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>Services</Link>
+            <Link to="/services" onClick={(e) => handleNavClick('/services', e)} className={`text-xl font-medium transition-all ${isActive('/services') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>SERVICES</Link>
 
-            <Link to="/contact" onClick={(e) => handleNavClick('/contact', e)} className={`text-xl font-medium transition-all ${isActive('/contact') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>Contact Us</Link>
+            <Link to="/contact" onClick={(e) => handleNavClick('/contact', e)} className={`text-xl font-medium transition-all ${isActive('/contact') ? 'text-purple-600 underline decoration-2 underline-offset-8' : 'text-slate-400 hover:text-black'}`}>CONTACT US</Link>
           </div>
 
           {/* Desktop Auth Buttons */}
