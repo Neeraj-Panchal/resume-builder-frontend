@@ -50,7 +50,7 @@ const Navbar = () => {
 
   return (
     <>
-      {/* 🌟 NEW CREATIVE FLOATING NAVBAR 🌟 */}
+      {/* NAVBAR */}
       <div className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm' : 'bg-transparent py-2'}`}>
         <nav className="w-full px-6 sm:px-12 md:px-20 py-3 flex justify-between items-center">
 
